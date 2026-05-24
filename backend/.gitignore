@@ -1,0 +1,17 @@
+# Dependency directories (DO NOT ignore package-lock.json)
+node_modules/
+
+# Environment variables
+.env
+.env.*
+
+# Local uploads / user-generated content
+uploads/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# System files
+.DS_Store

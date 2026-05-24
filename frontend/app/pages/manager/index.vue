@@ -156,7 +156,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 
-const API_BASE = 'http://localhost:3001/api'
+const config = useRuntimeConfig()
+const API_BASE = `${config.public.apiBase}/api`
 
 const stats = ref({
   totalPatients: 0,

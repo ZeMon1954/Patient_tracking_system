@@ -12,7 +12,7 @@ export const useApi = (path, options = {}) => {
       : `/${path}`;
 
   return $fetch(sanitizedPath, {
-    baseURL: 'http://localhost:3001',
+    baseURL: config.public.apiBase,
     headers: {
       'Content-Type': 'application/json',
       ...options.headers,

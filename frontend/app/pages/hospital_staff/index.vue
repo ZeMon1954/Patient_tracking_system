@@ -749,7 +749,8 @@
 import { ref, reactive, onMounted, computed } from 'vue'
 import Swal from 'sweetalert2'
 
-const API_BASE = 'http://localhost:3001/api'
+const config = useRuntimeConfig()
+const API_BASE = `${config.public.apiBase}/api`
 
 // ============= State =============
 const patients = ref([])

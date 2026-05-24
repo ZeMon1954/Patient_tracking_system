@@ -227,9 +227,10 @@ const loginWithGoogle = () => {
 const handleGoogleLogin = async (accessToken) => {
   loading.value = true;
   errorMessage.value = '';
+  const config = useRuntimeConfig();
 
   try {
-    const res = await $fetch('http://localhost:3001/api/auth/google-login', {
+    const res = await $fetch(`${config.public.apiBase}/api/auth/google-login`, {
       method: 'POST',
       body: {
         accessToken,
@@ -282,9 +283,10 @@ const handleGoogleLogin = async (accessToken) => {
 const handleLogin = async () => {
   loading.value = true;
   errorMessage.value = '';
+  const config = useRuntimeConfig();
 
   try {
-    const res = await $fetch('http://localhost:3001/api/auth/login', {
+    const res = await $fetch(`${config.public.apiBase}/api/auth/login`, {
       method: 'POST',
       body: {
         username: form.username,

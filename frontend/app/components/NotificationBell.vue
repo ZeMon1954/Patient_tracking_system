@@ -100,6 +100,7 @@ const isOpen = ref(false);
 const loading = ref(false);
 const notifications = ref([]);
 const bellRef = ref(null);
+const config = useRuntimeConfig();
 
 const unreadCount = computed(() => notifications.value.filter(n => !n.is_read).length);
 
@@ -115,7 +116,7 @@ async function fetchNotifications() {
   loading.value = true;
   try {
     const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:3001/api/notifications?user_id=${props.userId}`, {
+    const res = await fetch(`${config.public.apiBase}/api/notifications?user_id=${props.userId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     notifications.value = await res.json();
@@ -131,7 +132,7 @@ async function markRead(item) {
   if (item.is_read) return;
   try {
     const token = localStorage.getItem('token');
-    await fetch(`http://localhost:3001/api/notifications/${item.id}/read`, { 
+    await fetch(`${config.public.apiBase}/api/notifications/${item.id}/read`, { 
       method: 'PUT',
       headers: { 'Authorization': `Bearer ${token}` }
     });
@@ -143,7 +144,7 @@ async function markRead(item) {
 async function markAllRead() {
   try {
     const token = localStorage.getItem('token');
-    await fetch('http://localhost:3001/api/notifications/read-all', {
+    await fetch(`${config.public.apiBase}/api/notifications/read-all`, {
       method: 'PUT',
       headers: { 
         'Content-Type': 'application/json',
@@ -202,7 +203,7 @@ async function pollUnreadCount() {
   if (!props.userId) return;
   try {
     const token = localStorage.getItem('token');
-    const res = await fetch(`http://localhost:3001/api/notifications/unread-count?user_id=${props.userId}`, {
+    const res = await fetch(`${config.public.apiBase}/api/notifications/unread-count?user_id=${props.userId}`, {
       headers: { 'Authorization': `Bearer ${token}` }
     });
     const data = await res.json();

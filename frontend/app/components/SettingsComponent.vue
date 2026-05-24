@@ -268,7 +268,8 @@
 import { ref, reactive, computed, onMounted } from 'vue';
 import Swal from 'sweetalert2';
 
-const API_BASE = 'http://localhost:3001/api';
+const config = useRuntimeConfig()
+const API_BASE = `${config.public.apiBase}/api`
 
 // Tab controls
 const activeTab = ref('profile');

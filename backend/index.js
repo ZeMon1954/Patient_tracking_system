@@ -13,7 +13,9 @@ const allowedOrigins = [
   'http://localhost:3000',
   'https://patient-tracking-system-three.vercel.app',
   process.env.FRONTEND_URL
-].filter(Boolean);
+]
+  .filter(Boolean)
+  .map(url => url.trim().replace(/\/$/, ''));
 
 app.use(cors({
   origin: allowedOrigins,

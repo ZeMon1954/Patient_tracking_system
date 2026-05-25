@@ -205,6 +205,10 @@ exports.createReferral = async (req, res) => {
       const pName = patientInfo[0] ? `${patientInfo[0].first_name} ${patientInfo[0].last_name}` : 'ไม่ระบุ';
       const pEmail = patientInfo[0] ? patientInfo[0].email : null;
 
+      // ดึงข้อมูลเจ้าหน้าที่ผู้ส่งตัว
+      const [senderInfo] = await db.query('SELECT email FROM user WHERE id = ?', [userId]);
+      const senderEmail = senderInfo[0] ? senderInfo[0].email : null;
+
       // ดึงข้อมูลหน่วยบริการ เพื่อใช้ในอีเมล
       const [fromUnit] = await db.query('SELECT name FROM service_unit WHERE id = ?', [userUnitId]);
       const [toUnit] = await db.query('SELECT name FROM service_unit WHERE id = ?', [to_service_unit_id]);
@@ -224,7 +228,7 @@ exports.createReferral = async (req, res) => {
         ).catch(console.error);
       }
 
-      // ✅ 2. ส่งอีเมลแจ้งเตือนหน่วยบริการปลายทาง
+      // ✅ 2. ส่งอีเมลแจ้งเตือนหน่วยบริการปลายทาง (รพ.สต.)
       if (managers.length > 0) {
         const content = buildNewReferralEmail(pName, fUnitName, tUnitName, reason, dateStr);
 
@@ -237,6 +241,17 @@ exports.createReferral = async (req, res) => {
             content
           ).catch(console.error);
         }
+      }
+
+      // ✅ 3. ส่งอีเมลแจ้งเตือนเจ้าหน้าที่ผู้ส่งตัว (ถ้ามีเมล)
+      if (senderEmail) {
+        const contentForSender = buildNewReferralEmail(pName, fUnitName, tUnitName, reason, dateStr);
+        sendEmailNotification(
+          senderEmail,
+          'NEW_REFERRAL_SENDER',
+          'แจ้งเตือน: ยืนยันการส่งตัวผู้ป่วยของท่านสำเร็จ',
+          contentForSender
+        ).catch(console.error);
       }
 
       // ✅ บันทึก In-App ให้ทุกคนในหน่วยบริการปลายทาง (ไม่ว่าจะมีอีเมลหรือไม่)

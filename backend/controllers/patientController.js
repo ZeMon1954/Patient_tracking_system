@@ -336,35 +336,48 @@ exports.createAppointment = async (req, res) => {
       [patientId, doctor_id || null, datetime, reason || null, 'pending']
     );
 
-    // ✅ ดึงข้อมูลเพื่อส่งอีเมล
+    // ✅ ดึงข้อมูลเพื่อส่งการแจ้งเตือน
     try {
       const [patientRows] = await db.query('SELECT first_name, last_name, email FROM patient WHERE id = ?', [patientId]);
-      if (patientRows.length > 0 && patientRows[0].email) {
+      if (patientRows.length > 0) {
+        const pName = `${patientRows[0].first_name} ${patientRows[0].last_name}`;
+        const pEmail = patientRows[0].email;
+        
         let doctorName = '-';
+        let doctorEmail = null;
         if (doctor_id) {
-          const [docRows] = await db.query('SELECT first_name, last_name FROM user WHERE id = ?', [doctor_id]);
-          if (docRows.length > 0) doctorName = `${docRows[0].first_name} ${docRows[0].last_name}`;
+          const [docRows] = await db.query('SELECT first_name, last_name, email FROM user WHERE id = ?', [doctor_id]);
+          if (docRows.length > 0) {
+            doctorName = `${docRows[0].first_name} ${docRows[0].last_name}`;
+            doctorEmail = docRows[0].email;
+          }
         }
         
         const dateStr = new Date(datetime).toLocaleString('th-TH');
-        const content = buildNewAppointmentEmail(
-          `${patientRows[0].first_name} ${patientRows[0].last_name}`, 
-          dateStr, 
-          reason, 
-          doctorName
-        );
+        const content = buildNewAppointmentEmail(pName, dateStr, reason, doctorName);
         
-        // ส่งอีเมลโดยไม่รอให้เสร็จ (background) เพื่อไม่ให้ request ตอบช้า
-        sendEmailNotification(
-          patientRows[0].email, 
-          'NEW_APPOINTMENT', 
-          'ยืนยันการนัดหมายใหม่', 
-          content
-        ).catch(console.error);
+        // 1. ส่งอีเมลคนไข้ (ถ้ามีเมล)
+        if (pEmail) {
+          sendEmailNotification(
+            pEmail, 
+            'NEW_APPOINTMENT', 
+            'ยืนยันการนัดหมายใหม่', 
+            content
+          ).catch(console.error);
+        }
+        
+        // 2. ส่งอีเมลแพทย์/เจ้าหน้าที่ผู้รักษานัด (ถ้ามีเมล)
+        if (doctorEmail) {
+          sendEmailNotification(
+            doctorEmail, 
+            'NEW_APPOINTMENT_STAFF', 
+            'แจ้งเตือน: การนัดหมายใหม่ของคุณ', 
+            content
+          ).catch(console.error);
+        }
 
-        // ✅ บันทึก In-App Notification ให้แพทย์ที่รับผิดชอบ (ถ้ามี)
+        // 3. บันทึก In-App Notification ให้แพทย์ที่รับผิดชอบ
         if (doctor_id) {
-          const pName = `${patientRows[0].first_name} ${patientRows[0].last_name}`;
           pushInApp(doctor_id, 'นัดหมายใหม่', `มีการนัดหมายใหม่สำหรับ ${pName} วันที่ ${new Date(datetime).toLocaleString('th-TH')}`);
         }
       }

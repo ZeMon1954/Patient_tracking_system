@@ -419,7 +419,7 @@ exports.deleteAppointment = async (req, res) => {
 // GET /api/patients/service-units - รายการหน่วยบริการ
 exports.getServiceUnits = async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT id, name, unit_code FROM service_unit WHERE status="Active" ORDER BY name');
+    const [rows] = await db.query("SELECT id, name, unit_code FROM service_unit WHERE status='Active' ORDER BY name");
     res.json(rows);
   } catch (err) {
     res.status(500).json({ message: 'เกิดข้อผิดพลาด' });

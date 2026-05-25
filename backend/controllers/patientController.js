@@ -140,8 +140,40 @@ exports.createPatient = async (req, res) => {
       return res.status(400).json({ message: 'ไม่พบข้อมูลหน่วยบริการ' });
     }
 
-    if (!first_name || !last_name) {
-      return res.status(400).json({ message: 'กรุณากรอกชื่อ และนามสกุล' });
+    // ตรวจสอบความถูกต้องและครบถ้วนของข้อมูลสำคัญ
+    if (!cid || !cid.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกเลขบัตรประชาชน (CID)' });
+    }
+    if (cid.trim().length !== 13) {
+      return res.status(400).json({ message: 'เลขบัตรประชาชน (CID) ต้องมี 13 หลัก' });
+    }
+    if (!first_name || !first_name.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกชื่อจริง' });
+    }
+    if (!last_name || !last_name.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกนามสกุล' });
+    }
+    if (!date_of_birth) {
+      return res.status(400).json({ message: 'กรุณาระบุวัน/เดือน/ปีเกิด' });
+    }
+    if (!gender) {
+      return res.status(400).json({ message: 'กรุณาระบุเพศ' });
+    }
+    if (!phone || !phone.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกเบอร์โทรศัพท์' });
+    }
+    if (!email || !email.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกอีเมล' });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return res.status(400).json({ message: 'รูปแบบอีเมลไม่ถูกต้อง' });
+    }
+    if (!address || !address.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกที่อยู่โดยละเอียด' });
+    }
+    if (!disease_ids || !Array.isArray(disease_ids) || disease_ids.length === 0) {
+      return res.status(400).json({ message: 'กรุณาเลือกกลุ่มโรคประจำตัวอย่างน้อย 1 กลุ่ม' });
     }
 
     // 1. ดึงข้อมูลหน่วยบริการเพื่อนำ unit_code มาทำ HN
@@ -225,6 +257,51 @@ exports.updatePatient = async (req, res) => {
     await connection.beginTransaction();
 
     const { first_name, last_name, date_of_birth, gender, phone, email, address, cid, hn_number, service_unit_id, disease_ids } = req.body;
+
+    // ตรวจสอบความถูกต้องและครบถ้วนของข้อมูลสำคัญ
+    if (!cid || !cid.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกเลขบัตรประชาชน (CID)' });
+    }
+    if (cid.trim().length !== 13) {
+      return res.status(400).json({ message: 'เลขบัตรประชาชน (CID) ต้องมี 13 หลัก' });
+    }
+    if (!first_name || !first_name.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกชื่อจริง' });
+    }
+    if (!last_name || !last_name.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกนามสกุล' });
+    }
+    if (!date_of_birth) {
+      return res.status(400).json({ message: 'กรุณาระบุวัน/เดือน/ปีเกิด' });
+    }
+    if (!gender) {
+      return res.status(400).json({ message: 'กรุณาระบุเพศ' });
+    }
+    if (!phone || !phone.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกเบอร์โทรศัพท์' });
+    }
+    if (!email || !email.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกอีเมล' });
+    }
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email.trim())) {
+      return res.status(400).json({ message: 'รูปแบบอีเมลไม่ถูกต้อง' });
+    }
+    if (!address || !address.trim()) {
+      return res.status(400).json({ message: 'กรุณากรอกที่อยู่โดยละเอียด' });
+    }
+    if (!disease_ids || !Array.isArray(disease_ids) || disease_ids.length === 0) {
+      return res.status(400).json({ message: 'กรุณาเลือกกลุ่มโรคประจำตัวอย่างน้อย 1 กลุ่ม' });
+    }
+
+    // ตรวจสอบเลขบัตรประชาชน (CID) ซ้ำสำหรับคนไข้อื่น
+    if (cid) {
+      const [existingCid] = await connection.query('SELECT id FROM patient WHERE cid = ? AND id != ?', [cid, req.params.id]);
+      if (existingCid.length > 0) {
+        await connection.rollback();
+        return res.status(409).json({ message: `เลขบัตรประชาชน "${cid}" มีในระบบสำหรับคนไข้อื่นแล้ว` });
+      }
+    }
 
     const genderMap = { 'ชาย': 'male', 'หญิง': 'female', 'อื่นๆ': 'other', male: 'male', female: 'female', other: 'other' };
     const genderVal = genderMap[gender] || 'other';

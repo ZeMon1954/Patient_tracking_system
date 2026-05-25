@@ -353,9 +353,15 @@
               ข้อมูลการติดต่อและที่อยู่
             </h3>
             
-            <div class="space-y-1.5">
-              <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider">เบอร์โทรศัพท์ <span class="text-rose-500">*</span></label>
-              <input v-model="form.phone" type="text" placeholder="08x-xxx-xxxx" class="input-style" />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider">เบอร์โทรศัพท์ <span class="text-rose-500">*</span></label>
+                <input v-model="form.phone" type="text" placeholder="08x-xxx-xxxx" class="input-style" />
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider">อีเมล (สำหรับแจ้งเตือน) <span class="text-xs text-slate-400 font-normal">(ถ้ามี)</span></label>
+                <input v-model="form.email" type="email" placeholder="example@email.com" class="input-style" />
+              </div>
             </div>
 
             <div class="space-y-1.5">
@@ -993,9 +999,15 @@
               ข้อมูลการติดต่อและที่อยู่
             </h3>
             
-            <div class="space-y-1.5">
-              <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider">เบอร์โทรศัพท์ <span class="text-rose-500">*</span></label>
-              <input v-model="editForm.phone" type="text" placeholder="08x-xxx-xxxx" class="input-style" />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider">เบอร์โทรศัพท์ <span class="text-rose-500">*</span></label>
+                <input v-model="editForm.phone" type="text" placeholder="08x-xxx-xxxx" class="input-style" />
+              </div>
+              <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-slate-600 uppercase tracking-wider">อีเมล (สำหรับแจ้งเตือน) <span class="text-xs text-slate-400 font-normal">(ถ้ามี)</span></label>
+                <input v-model="editForm.email" type="email" placeholder="example@email.com" class="input-style" />
+              </div>
             </div>
 
             <div class="space-y-1.5">
@@ -1413,6 +1425,7 @@ const form = reactive({
   gender: '',
   birthDate: '',
   phone: '',
+  email: '',
   address: '',
   province: '',
   district: '',
@@ -1443,6 +1456,7 @@ const handleSave = async () => {
       date_of_birth: form.birthDate,
       gender: form.gender === 'ชาย' ? 'male' : form.gender === 'หญิง' ? 'female' : 'other',
       phone: form.phone,
+      email: form.email,
       address: form.address,
       service_unit_id: null // จะถูก override โดย backend ตามสิทธิ์ผู้ใช้
     }
@@ -1985,6 +1999,7 @@ const editForm = reactive({
   gender: '',
   birthDate: '',
   phone: '',
+  email: '',
   address: '',
   province: '',
   district: '',
@@ -2011,6 +2026,7 @@ const openEditPatientModal = (patient) => {
   }
   
   editForm.status = patient.status || 'Active'
+  editForm.email = patient.email || ''
   
   showEditPatientModal.value = true
 }

@@ -234,9 +234,15 @@
             <h3 class="text-sm font-bold text-[#00685f] border-b border-slate-200 pb-2 flex items-center gap-2">
               <span class="material-symbols-outlined text-[18px]">contact_phone</span>ข้อมูลการติดต่อ
             </h3>
-            <div class="space-y-1.5">
-              <label class="label-style">เบอร์โทรศัพท์ <span class="text-rose-500">*</span></label>
-              <input v-model="form.phone" type="text" placeholder="08x-xxx-xxxx" class="input-style" />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label class="label-style">เบอร์โทรศัพท์ <span class="text-rose-500">*</span></label>
+                <input v-model="form.phone" type="text" placeholder="08x-xxx-xxxx" class="input-style" />
+              </div>
+              <div class="space-y-1.5">
+                <label class="label-style">อีเมล (สำหรับแจ้งเตือน) <span class="text-xs text-slate-400 font-normal">(ถ้ามี)</span></label>
+                <input v-model="form.email" type="email" placeholder="example@email.com" class="input-style" />
+              </div>
             </div>
             <div class="space-y-1.5">
               <label class="label-style">ที่อยู่</label>
@@ -398,9 +404,15 @@
             <h3 class="text-sm font-bold text-[#006399] border-b border-slate-200 pb-2 flex items-center gap-2">
               <span class="material-symbols-outlined text-[18px]">contact_phone</span>ข้อมูลการติดต่อ
             </h3>
-            <div class="space-y-1.5">
-              <label class="label-style">เบอร์โทรศัพท์</label>
-              <input v-model="editForm.phone" type="text" class="input-style" />
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label class="label-style">เบอร์โทรศัพท์</label>
+                <input v-model="editForm.phone" type="text" class="input-style" />
+              </div>
+              <div class="space-y-1.5">
+                <label class="label-style">อีเมล (สำหรับแจ้งเตือน) <span class="text-xs text-slate-400 font-normal">(ถ้ามี)</span></label>
+                <input v-model="editForm.email" type="email" placeholder="example@email.com" class="input-style" />
+              </div>
             </div>
             <div class="space-y-1.5">
               <label class="label-style">ที่อยู่</label>
@@ -810,18 +822,18 @@ const currentDate = ref(new Intl.DateTimeFormat('th-TH', { dateStyle: 'medium', 
 // ============= Forms =============
 const form = reactive({
   cid: '', hn_number: '', prefix: '', first_name: '', last_name: '',
-  gender: '', date_of_birth: '', phone: '', address: '', service_unit_id: '',
+  gender: '', date_of_birth: '', phone: '', email: '', address: '', service_unit_id: '',
   disease_ids: []
 })
 const resetForm = () => Object.assign(form, {
   cid: '', hn_number: '', prefix: '', first_name: '', last_name: '',
-  gender: '', date_of_birth: '', phone: '', address: '', service_unit_id: '',
+  gender: '', date_of_birth: '', phone: '', email: '', address: '', service_unit_id: '',
   disease_ids: []
 })
 
 const editForm = reactive({
   id: null, cid: '', hn_number: '', prefix: '', first_name: '', last_name: '',
-  gender: '', date_of_birth: '', phone: '', address: '', service_unit_id: '',
+  gender: '', date_of_birth: '', phone: '', email: '', address: '', service_unit_id: '',
   disease_ids: []
 })
 
@@ -960,7 +972,7 @@ const openEditModal = async (p) => {
       id: data.id, cid: data.cid || '', hn_number: data.hn_number, prefix: data.prefix || '',
       first_name: data.first_name, last_name: data.last_name, gender: data.gender,
       date_of_birth: data.date_of_birth ? data.date_of_birth.slice(0, 10) : '',
-      phone: data.phone || '', address: data.address || '',
+      phone: data.phone || '', email: data.email || '', address: data.address || '',
       service_unit_id: data.service_unit_id || '',
       disease_ids: data.disease_ids || []
     })

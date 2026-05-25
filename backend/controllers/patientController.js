@@ -127,7 +127,7 @@ exports.createPatient = async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    const { cid, first_name, last_name, date_of_birth, gender, phone, address, disease_ids } = req.body;
+    const { cid, first_name, last_name, date_of_birth, gender, phone, email, address, disease_ids } = req.body;
     let { service_unit_id } = req.body;
     const { role, service_unit_id: userUnitId } = req.user;
 
@@ -190,8 +190,8 @@ exports.createPatient = async (req, res) => {
     const genderVal = genderMap[gender] || 'other';
 
     const [result] = await connection.query(
-      'INSERT INTO patient (service_unit_id, hn_number, cid, first_name, last_name, date_of_birth, gender, phone, address) VALUES (?,?,?,?,?,?,?,?,?)',
-      [service_unit_id || null, hn_number, cid || null, first_name, last_name, date_of_birth || null, genderVal, phone || null, address || null]
+      'INSERT INTO patient (service_unit_id, hn_number, cid, first_name, last_name, date_of_birth, gender, phone, email, address) VALUES (?,?,?,?,?,?,?,?,?,?)',
+      [service_unit_id || null, hn_number, cid || null, first_name, last_name, date_of_birth || null, genderVal, phone || null, email || null, address || null]
     );
 
     const patientId = result.insertId;
@@ -224,14 +224,14 @@ exports.updatePatient = async (req, res) => {
   try {
     await connection.beginTransaction();
 
-    const { first_name, last_name, date_of_birth, gender, phone, address, cid, hn_number, service_unit_id, disease_ids } = req.body;
+    const { first_name, last_name, date_of_birth, gender, phone, email, address, cid, hn_number, service_unit_id, disease_ids } = req.body;
 
     const genderMap = { 'ชาย': 'male', 'หญิง': 'female', 'อื่นๆ': 'other', male: 'male', female: 'female', other: 'other' };
     const genderVal = genderMap[gender] || 'other';
 
     const [result] = await connection.query(
-      'UPDATE patient SET first_name=?, last_name=?, date_of_birth=?, gender=?, phone=?, address=?, cid=?, hn_number=?, service_unit_id=?, updated_at=NOW() WHERE id=?',
-      [first_name, last_name, date_of_birth || null, genderVal, phone || null, address || null, cid || null, hn_number, service_unit_id || null, req.params.id]
+      'UPDATE patient SET first_name=?, last_name=?, date_of_birth=?, gender=?, phone=?, email=?, address=?, cid=?, hn_number=?, service_unit_id=?, updated_at=NOW() WHERE id=?',
+      [first_name, last_name, date_of_birth || null, genderVal, phone || null, email || null, address || null, cid || null, hn_number, service_unit_id || null, req.params.id]
     );
 
     if (result.affectedRows === 0) {

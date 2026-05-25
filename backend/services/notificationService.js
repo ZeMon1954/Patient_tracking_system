@@ -1,21 +1,9 @@
 // services/notificationService.js
-// บริการส่งอีเมลแจ้งเตือนและบันทึกประวัติลง notifications_log
-const nodemailer = require('nodemailer');
+// บริการส่งอีเมลแจ้งเตือนและบันทึกประวัติลง notifications_log ผ่าน SendGrid HTTP API
 const pool = require('../db');
 
-// สร้าง transporter สำหรับส่งอีเมลผ่าน SMTP
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.gmail.com',
-  port: parseInt(process.env.SMTP_PORT) || 587,
-  secure: false, // true สำหรับ port 465
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS,
-  },
-});
-
 /**
- * ส่งอีเมลแจ้งเตือนและบันทึกลง notifications_log
+ * ส่งอีเมลแจ้งเตือนและบันทึกลง notifications_log ผ่าน SendGrid HTTP API
  * @param {string} recipient - อีเมลผู้รับ
  * @param {string} notificationType - ประเภท เช่น NEW_APPOINTMENT, UPCOMING_REMINDER, MISSED_APPOINTMENT, NEW_REFERRAL
  * @param {string} subject - หัวข้ออีเมล
@@ -31,13 +19,44 @@ async function sendEmailNotification(recipient, notificationType, subject, htmlC
   const logId = logResult.insertId;
 
   try {
-    // 2. ส่งอีเมลจริง
-    await transporter.sendMail({
-      from: `"ระบบติดตามผู้ป่วย" <${process.env.SMTP_USER}>`,
-      to: recipient,
-      subject: subject,
-      html: htmlContent,
+    const apiKey = process.env.SENDGRID_API_KEY;
+    const fromEmail = process.env.SENDGRID_FROM_EMAIL || 'mom201317@gmail.com';
+
+    if (!apiKey) {
+      throw new Error('SENDGRID_API_KEY is not defined in environment variables');
+    }
+
+    // 2. ส่งอีเมลผ่าน SendGrid HTTP API
+    const response = await fetch('https://api.sendgrid.com/v3/mail/send', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        personalizations: [
+          {
+            to: [{ email: recipient }]
+          }
+        ],
+        from: {
+          email: fromEmail,
+          name: 'ระบบติดตามผู้ป่วย'
+        },
+        subject: subject,
+        content: [
+          {
+            type: 'text/html',
+            value: htmlContent
+          }
+        ]
+      })
     });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`SendGrid API error: ${response.status} - ${errText}`);
+    }
 
     // 3. อัปเดตสถานะเป็น sent
     await pool.execute(
@@ -45,17 +64,17 @@ async function sendEmailNotification(recipient, notificationType, subject, htmlC
       [logId]
     );
 
-    console.log(`✅ Email sent to ${recipient} [${notificationType}]`);
+    console.log(`✅ SendGrid Email sent to ${recipient} [${notificationType}]`);
     return { success: true, logId };
   } catch (error) {
     // 4. อัปเดตสถานะเป็น failed และเก็บ error message
-    const errMsg = error.message || 'Unknown SMTP error';
+    const errMsg = error.message || 'Unknown SendGrid error';
     await pool.execute(
       `UPDATE notifications_log SET status = 'failed', error_message = ? WHERE id = ?`,
       [errMsg, logId]
     );
 
-    console.error(`❌ Email failed to ${recipient} [${notificationType}]:`, errMsg);
+    console.error(`❌ SendGrid Email failed to ${recipient} [${notificationType}]:`, errMsg);
     return { success: false, logId, error: errMsg };
   }
 }

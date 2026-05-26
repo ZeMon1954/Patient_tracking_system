@@ -1,5 +1,6 @@
 // controllers/trackingController.js
 const db = require('../db');
+const supabase = require('../utils/supabaseClient');
 
 // Helper: บันทึก In-App Notification
 async function pushInApp(userId, title, message) {
@@ -67,11 +68,36 @@ exports.createTracking = async (req, res) => {
     // 2. จัดการรูปภาพ (ถ้ามี) - บันทึกลงตาราง image ที่คุณออกแบบไว้
     if (req.files && req.files.length > 0) {
       for (const file of req.files) {
+        // สร้างชื่อไฟล์ที่ไม่ซ้ำกัน
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
+        const fileExt = file.originalname.split('.').pop();
+        const fileName = `${file.fieldname}-${uniqueSuffix}.${fileExt}`;
+
+        // อัปโหลดขึ้น Supabase Storage
+        const { data, error } = await supabase.storage
+          .from('patient_images')
+          .upload(fileName, file.buffer, {
+            contentType: file.mimetype,
+            upsert: false
+          });
+
+        if (error) {
+          console.error("Supabase Upload Error:", error);
+          throw new Error("อัปโหลดรูปภาพไม่สำเร็จ");
+        }
+
+        // ดึง Public URL ของรูปภาพ
+        const { data: urlData } = supabase.storage
+          .from('patient_images')
+          .getPublicUrl(fileName);
+        
+        const publicUrl = urlData.publicUrl;
+
         await connection.query(
           `INSERT INTO image 
             (reference_type, reference_id, file_name, file_path, file_type, uploaded_by, uploaded_at) 
            VALUES (?, ?, ?, ?, ?, ?, NOW())`,
-          ['tracking', trackingId, file.filename, file.path, file.mimetype, userId]
+          ['tracking', trackingId, fileName, publicUrl, file.mimetype, userId]
         );
       }
     }
@@ -219,7 +245,7 @@ exports.createTracking = async (req, res) => {
   } catch (err) {
     await connection.rollback();
     console.error('createTracking:', err);
-    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกผลการติดตาม' });
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการบันทึกผลการติดตาม', error: err.message, stack: err.stack });
   } finally {
     connection.release();
   }

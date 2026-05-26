@@ -1216,7 +1216,7 @@
                   class="relative aspect-square rounded-lg border border-slate-200 overflow-hidden cursor-pointer group shadow-sm hover:border-[#00685f] transition-all duration-200"
                   title="คลิกเพื่อขยายดูรูปภาพ"
                 >
-                  <img :src="config.public.apiBase + '/' + img.file_path.replace(/\\/g, '/')" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
+                  <img :src="img.file_path.startsWith('http') ? img.file_path : config.public.apiBase + '/' + img.file_path.replace(/\\/g, '/')" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
                   <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 flex items-center justify-center transition-all">
                     <span class="material-symbols-outlined text-white text-xl opacity-0 group-hover:opacity-100 scale-90 group-hover:scale-100 transition-all">zoom_in</span>
                   </div>
@@ -2073,7 +2073,7 @@ const openDetailModal = async (item) => {
 }
 
 const viewFullscreenImage = (filePath) => {
-  const fullUrl = config.public.apiBase + '/' + filePath.replace(/\\/g, '/')
+  const fullUrl = filePath.startsWith('http') ? filePath : config.public.apiBase + '/' + filePath.replace(/\\/g, '/')
   Swal.fire({
     imageUrl: fullUrl,
     imageAlt: 'รูปภาพประกอบการติดตาม',

@@ -1,5 +1,5 @@
-const { sendEmailNotification, buildNewAppointmentEmail } = require('../services/notificationService');
 require('dotenv').config({ path: '../.env' }); // โหลด .env เผื่อรันแยก
+const { sendEmailNotification, buildNewAppointmentEmail } = require('../services/notificationService');
 
 async function test() {
   console.log('⏳ กำลังทดสอบส่งอีเมลแจ้งเตือน...');

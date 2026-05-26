@@ -1,6 +1,19 @@
 // controllers/trackingController.js
 const db = require('../db');
 
+// Helper: บันทึก In-App Notification
+async function pushInApp(userId, title, message) {
+  try {
+    await db.query(
+      'INSERT INTO notification_system (user_id, title, message, is_read) VALUES (?,?,?,0)',
+      [userId, title, message]
+    );
+  } catch (e) {
+    console.error('pushInApp error:', e);
+  }
+}
+
+
 // POST /api/tracking - บันทึกผลการติดตาม/เยี่ยมบ้าน
 exports.createTracking = async (req, res) => {
   const connection = await db.getConnection(); // Use transaction
@@ -84,10 +97,124 @@ exports.createTracking = async (req, res) => {
       );
     }
 
+    // 5. ระบบส่งตัวกลับโรงพยาบาล (Refer Back) อัตโนมัติ (หากมีการเลือกฟังก์ชันนี้)
+    const { is_refer_back, refer_back_reason } = req.body;
+    let referBackCreated = false;
+    let newReferralId = null;
+    let hospitalUnitId = null;
+
+    if (is_refer_back === true || is_refer_back === 'true') {
+      // 5.1 ค้นหาประวัติการส่งตัวล่าสุดของคนไข้ เพื่อดูว่าโรงพยาบาลไหนเป็นผู้ส่งมาตอนแรก
+      const [origReferral] = await connection.query(
+        `SELECT from_service_unit_id, referred_by_user_id 
+         FROM referral 
+         WHERE patient_id = ? AND status IN ('accepted', 'completed') 
+         ORDER BY referral_date DESC LIMIT 1`,
+        [patient_id]
+      );
+
+      // ดึงรหัส รพ.สต. ปัจจุบันของคนไข้
+      const [patientData] = await connection.query(
+        'SELECT service_unit_id FROM patient WHERE id = ?',
+        [patient_id]
+      );
+
+      const pcuUnitId = patientData[0] ? patientData[0].service_unit_id : req.user.service_unit_id;
+      hospitalUnitId = origReferral[0] ? origReferral[0].from_service_unit_id : null;
+
+      if (hospitalUnitId) {
+        const reasonStr = refer_back_reason || symptoms_detail || 'พบภาวะแทรกซ้อนหรืออาการทรุดลงจากการลงเยี่ยมบ้าน';
+        
+        // 5.2 สร้างข้อมูลการส่งต่อกลับ (Refer Back) ลงในตาราง referral
+        const [refResult] = await connection.query(
+          `INSERT INTO referral 
+            (patient_id, appointment_id, from_service_unit_id, to_service_unit_id, referred_by_user_id, referral_date, reason, urgency_level, status) 
+           VALUES (?, ?, ?, ?, ?, NOW(), ?, 'urgent', 'pending')`,
+          [
+            patient_id,
+            appointment_id || null,
+            pcuUnitId,       // รพ.สต. เป็นผู้ส่งกลับ
+            hospitalUnitId, // ส่งกลับไปยังโรงพยาบาลเดิม
+            userId,          // เจ้าหน้าที่ รพ.สต. เป็นผู้กดส่ง
+            `[ส่งกลับเพื่อรักษาต่อ] ${reasonStr}`
+          ]
+        );
+        newReferralId = refResult.insertId;
+        referBackCreated = true;
+
+        // 5.3 ส่งตัวผู้ป่วยกลับคืนโรงพยาบาลเดิมทันที (ปรับ service_unit_id กลับเป็นของโรงพยาบาล)
+        await connection.query(
+          'UPDATE patient SET service_unit_id = ? WHERE id = ?',
+          [hospitalUnitId, patient_id]
+        );
+      }
+    }
+
     await connection.commit();
+
+    // 6. ส่งแจ้งเตือนสำหรับการส่งตัวกลับโรงพยาบาล (Refer Back Notification)
+    if (referBackCreated && newReferralId) {
+      try {
+        // ดึงข้อมูลเพื่อส่งการแจ้งเตือน
+        const [refInfo] = await db.query(`
+          SELECT p.first_name, p.last_name, su_from.name AS from_unit_name, su_to.name AS to_unit_name, r.reason
+          FROM referral r
+          JOIN patient p ON r.patient_id = p.id
+          JOIN service_unit su_from ON r.from_service_unit_id = su_from.id
+          JOIN service_unit su_to ON r.to_service_unit_id = su_to.id
+          WHERE r.id = ?
+        `, [newReferralId]);
+
+        if (refInfo.length > 0) {
+          const { first_name, last_name, from_unit_name, to_unit_name, reason: refReason } = refInfo[0];
+          const pName = `${first_name} ${last_name}`;
+
+          // ค้นหาเจ้าหน้าที่ทุกคนในโรงพยาบาลเป้าหมายเพื่อส่ง In-App
+          const [hospitalStaff] = await db.query(
+            'SELECT id, email FROM user WHERE service_unit_id = ? AND role IN ("manager", "hospital_staff")',
+            [hospitalUnitId]
+          );
+
+          const title = '⚠️ เคสส่งกลับด่วน (Refer Back)';
+          const msg = `ผู้ป่วย ${pName} ถูกส่งกลับตัวจาก ${from_unit_name} เนื่องจาก: ${refReason.replace('[ส่งกลับเพื่อรักษาต่อ] ', '')}`;
+
+          // ส่ง In-App ให้เจ้าหน้าที่ทุกคนใน รพ. ปลายทาง
+          for (const staff of hospitalStaff) {
+            await pushInApp(staff.id, title, msg);
+          }
+
+          // ส่งอีเมล (ถ้ามีอีเมลแจ้งเตือนในระบบและมี service)
+          try {
+            const { sendEmailNotification, buildNewReferralEmail } = require('../services/notificationService');
+            const dateStr = new Date().toLocaleString('th-TH');
+            const emailContent = buildNewReferralEmail(pName, from_unit_name, to_unit_name, refReason, dateStr);
+
+            for (const staff of hospitalStaff) {
+              if (staff.email) {
+                sendEmailNotification(
+                  staff.email,
+                  'REFER_BACK_ALERT',
+                  `[ส่งกลับด่วน] แจ้งเตือน: มีเคสส่งกลับผู้ป่วย ${pName}`,
+                  emailContent
+                ).catch(console.error);
+              }
+            }
+          } catch (emailErr) {
+            console.error('Refer back email failed:', emailErr);
+          }
+        }
+      } catch (notifErr) {
+        console.error('Refer back notification process failed:', notifErr);
+      }
+    }
+
     res.status(201).json({ 
-      message: 'บันทึกผลการติดตามและอัปเดตสถานะนัดหมายเรียบร้อยแล้ว', 
-      id: trackingId 
+      message: referBackCreated 
+        ? 'บันทึกผลการติดตามและสร้างรายการส่งตัวกลับโรงพยาบาลด่วนเรียบร้อยแล้ว' 
+        : 'บันทึกผลการติดตามและอัปเดตสถานะนัดหมายเรียบร้อยแล้ว', 
+      id: trackingId,
+      refer_back_created: referBackCreated,
+      referral_id: newReferralId
     });
   } catch (err) {
     await connection.rollback();

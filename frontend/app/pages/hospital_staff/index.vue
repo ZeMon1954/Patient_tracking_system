@@ -50,6 +50,15 @@
               >
                 ส่งตัวไปแล้ว
               </button>
+              <button 
+                @click="filterCareStatus = 'referred_back'"
+                :class="filterCareStatus === 'referred_back' ? 'bg-white text-rose-600 shadow-sm' : 'text-slate-500 hover:text-slate-700'"
+                class="px-4 py-1.5 rounded-md text-xs font-bold transition-all flex items-center gap-1.5"
+              >
+                <span v-if="filterCareStatus === 'referred_back'" class="w-1.5 h-1.5 rounded-full bg-rose-500 animate-pulse"></span>
+                <span v-else class="w-1.5 h-1.5 rounded-full bg-slate-400"></span>
+                ถูกส่งตัวกลับ
+              </button>
             </div>
           </div>
 
@@ -109,7 +118,11 @@
                     </span>
                   </td>
                   <td class="py-4 px-4 text-center">
-                    <span v-if="p.service_unit_id === currentUserUnitId" class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-bold border border-blue-100 uppercase">
+                    <span v-if="p.is_refer_back" class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-rose-50 text-rose-600 text-[10px] font-bold border border-rose-100 uppercase animate-pulse shadow-sm" title="ส่งตัวกลับจาก รพ.สต.">
+                      <span class="w-1.5 h-1.5 rounded-full bg-rose-600"></span>
+                      ถูกส่งตัวกลับ
+                    </span>
+                    <span v-else-if="p.service_unit_id === currentUserUnitId" class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-50 text-blue-600 text-[10px] font-bold border border-blue-100 uppercase">
                       <span class="w-1 h-1 rounded-full bg-blue-600"></span>
                       ในหน่วยบริการ
                     </span>
@@ -795,11 +808,12 @@ const userUnitName = computed(() => {
 const sortedFilteredPatients = computed(() => {
   let list = [...patients.value]
 
-  // 1. กรองตามสถานะการดูแล
   if (filterCareStatus.value === 'in_unit') {
-    list = list.filter(p => p.service_unit_id === currentUserUnitId.value)
+    list = list.filter(p => p.service_unit_id === currentUserUnitId.value && !p.is_refer_back)
   } else if (filterCareStatus.value === 'referred_out') {
     list = list.filter(p => p.service_unit_id !== currentUserUnitId.value)
+  } else if (filterCareStatus.value === 'referred_back') {
+    list = list.filter(p => p.is_refer_back)
   }
 
   // 2. เรียงลำดับ: ในหน่วยงานตนเองขึ้นก่อนเสมอ

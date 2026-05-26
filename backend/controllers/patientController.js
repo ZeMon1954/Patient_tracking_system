@@ -68,6 +68,7 @@ exports.getPatients = async (req, res) => {
           'normal'
         ) AS health_status,
         (SELECT DATE(appointment_date) FROM appointments WHERE patient_id = p.id ORDER BY appointment_date DESC LIMIT 1) AS last_visit,
+        (SELECT CASE WHEN reason LIKE '[ส่งกลับเพื่อรักษาต่อ]%' THEN 1 ELSE 0 END FROM referral WHERE patient_id = p.id ORDER BY referral_date DESC LIMIT 1) AS is_refer_back,
         p.created_at
       FROM patient p
       LEFT JOIN service_unit su ON p.service_unit_id = su.id

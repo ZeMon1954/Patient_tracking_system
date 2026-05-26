@@ -256,10 +256,15 @@ exports.getPCUPatients = async (req, res) => {
     const where = ['p.service_unit_id = ?'];
     params.push(unit_id);
 
-    // ถ้าไม่ใช่ Admin/Manager ให้ดูได้เฉพาะคนที่ตนเองเกี่ยวข้อง (เป็นเจ้าของหน่วย หรือ เป็นคนรับเคสส่งต่อ)
+    // ถ้าไม่ใช่ Admin/Manager ให้ดูได้เฉพาะคนที่ตนเองเกี่ยวข้อง
     if (role !== 'admin' && role !== 'manager') {
-      where.push(`(p.service_unit_id = ? OR p.id IN (SELECT patient_id FROM referral WHERE receiver_user_id = ?))`);
-      params.push(unit_id, userId);
+      where.push(`
+        (
+          (p.service_unit_id = ? AND p.id NOT IN (SELECT patient_id FROM referral WHERE to_service_unit_id = ? AND status IN ('accepted', 'completed')))
+          OR p.id IN (SELECT patient_id FROM referral WHERE to_service_unit_id = ? AND receiver_user_id = ? AND status IN ('accepted', 'completed'))
+        )
+      `);
+      params.push(unit_id, unit_id, unit_id, userId);
     }
 
     const whereClause = 'WHERE ' + where.join(' AND ');
@@ -441,6 +446,21 @@ exports.getTrackingHistory = async (req, res) => {
 exports.getTodayAppointments = async (req, res) => {
   try {
     const { unit_id } = req.params;
+    const { id: userId, role } = req.user;
+
+    let userFilter = '';
+    const params = [unit_id];
+
+    if (role !== 'admin' && role !== 'manager') {
+      userFilter = `
+        AND (
+          (p.service_unit_id = ? AND p.id NOT IN (SELECT patient_id FROM referral WHERE to_service_unit_id = ? AND status IN ('accepted', 'completed')))
+          OR p.id IN (SELECT patient_id FROM referral WHERE to_service_unit_id = ? AND receiver_user_id = ? AND status IN ('accepted', 'completed'))
+        )
+      `;
+      params.push(unit_id, unit_id, unit_id, userId);
+    }
+
     const [rows] = await db.query(`
       SELECT
         a.id,
@@ -456,8 +476,9 @@ exports.getTodayAppointments = async (req, res) => {
       WHERE p.service_unit_id = ?
         AND DATE(a.appointment_date) = CURDATE()
         AND a.status = 'pending'
+        ${userFilter}
       ORDER BY a.appointment_date ASC
-    `, [unit_id]);
+    `, params);
 
     res.json(rows);
   } catch (err) {
@@ -470,11 +491,29 @@ exports.getTodayAppointments = async (req, res) => {
 exports.getMissedAppointments = async (req, res) => {
   try {
     const { unit_id } = req.params;
-    const { id: userId } = req.user;
+    const { id: userId, role } = req.user;
 
-    // แสดงนัดที่ตกหล่นเฉพาะ:
-    // 1. ผู้ป่วยที่สังกัดหน่วยนี้อยู่แล้ว
-    // 2. ผู้ป่วยที่ถูกส่งต่อมา และเจ้าหน้าที่คนนี้ (หรือใครในหน่วยนี้) กดรับงานแล้วเท่านั้น
+    let userFilter = `
+        AND (
+          -- เป็นคนไข้เดิมของหน่วย
+          p.id NOT IN (SELECT patient_id FROM referral WHERE to_service_unit_id = ? AND status IN ('accepted', 'completed'))
+          OR 
+          -- หรือเป็นคนไข้ส่งต่อที่ "รับงานแล้ว" (ถ้าเป็น admin/manager ดูได้หมด)
+          p.id IN (SELECT patient_id FROM referral WHERE to_service_unit_id = ? AND status IN ('accepted', 'completed'))
+        )
+    `;
+    const params = [unit_id, unit_id, unit_id];
+
+    if (role !== 'admin' && role !== 'manager') {
+      userFilter = `
+        AND (
+          (p.service_unit_id = ? AND p.id NOT IN (SELECT patient_id FROM referral WHERE to_service_unit_id = ? AND status IN ('accepted', 'completed')))
+          OR p.id IN (SELECT patient_id FROM referral WHERE to_service_unit_id = ? AND receiver_user_id = ? AND status IN ('accepted', 'completed'))
+        )
+      `;
+      params.push(unit_id, userId); // because params already has [unit_id, unit_id, unit_id]
+    }
+
     const [rows] = await db.query(`
       SELECT
         a.id,
@@ -490,15 +529,9 @@ exports.getMissedAppointments = async (req, res) => {
       WHERE p.service_unit_id = ?
         AND DATE(a.appointment_date) < CURDATE()
         AND a.status = 'pending'
-        AND (
-          -- เป็นคนไข้เดิมของหน่วย
-          p.id NOT IN (SELECT patient_id FROM referral WHERE to_service_unit_id = ?)
-          OR 
-          -- หรือเป็นคนไข้ส่งต่อที่ "รับงานแล้ว"
-          p.id IN (SELECT patient_id FROM referral WHERE to_service_unit_id = ? AND status IN ('accepted', 'completed'))
-        )
+        ${userFilter}
       ORDER BY a.appointment_date DESC
-    `, [unit_id, unit_id, unit_id]);
+    `, params);
 
     res.json(rows);
   } catch (err) {

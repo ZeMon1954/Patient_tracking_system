@@ -4,48 +4,101 @@
 
 ---
 
-## 1. Use Case Diagram (แผนภาพการใช้งานระบบ)
-แผนภาพ Use Case แสดงผู้ใช้งานหลัก (**Actors**) และความสามารถของระบบ (**Use Cases**) ที่ออกแบบตามฟังก์ชันการทำงานจริง
+## 1. ยูสเคสไดอะแกรม (Use Case Diagram)
+ระบบติดตามและส่งต่อคนไข้ (Patient Tracking System) จะประกอบไปด้วยการทำงานของระบบ (Use Case) และปัจจัยที่เกี่ยวข้องภายนอก (Actor) มีรายละเอียดดังนี้
 
+1. **ปัจจัยที่เกี่ยวข้องภายนอก (Actor)** จะเป็นบทบาทของผู้ใช้ที่ทำงานกับระบบ ในยูสเคสนี้มี 4 บทบาท คือ:
+   * เจ้าหน้าที่โรงพยาบาล (Hospital Staff)
+   * เจ้าหน้าที่อนามัย / รพ.สต. (PCU Staff)
+   * ผู้ป่วย (Patient)
+   * ผู้ดูแลระบบ (Administrator / Manager)
+
+2. **การทำงานของระบบ (Use Case)** มี 4 ส่วนตามบทบาทผู้ใช้งาน โดยมีทั้งหมด 19 ยูสเคส ดังนี้:
+   * **2.1 เจ้าหน้าที่โรงพยาบาล (Hospital Staff)** มี 7 ยูสเคส คือ:
+     * 2.1.1 เข้าสู่ระบบด้วยบัญชีผู้ใช้งาน (Login)
+     * 2.1.2 ลงทะเบียนประวัติคนไข้ใหม่ (Register Patient)
+     * 2.1.3 แก้ไขข้อมูลคนไข้ในระบบ (Update Patient)
+     * 2.1.4 สร้างเคสส่งต่อการติดตามผู้ป่วยไปยังอนามัยปลายทาง (Create Referral)
+     * 2.1.5 สร้างและจัดการปฏิทินนัดหมายเยี่ยมบ้านของคนไข้ (Create Appointment)
+     * 2.1.6 ดูประวัติการรักษา การส่งต่อ และการติดตามเยี่ยมบ้านย้อนหลังของคนไข้ (View Patient History)
+     * 2.1.7 ดูรายงานสถิติตัวเลขภาพรวมบนแดชบอร์ดหลัก (View Dashboard)
+   * **2.2 เจ้าหน้าที่อนามัย / รพ.สต. (PCU Staff)** มี 7 ยูสเคส คือ:
+     * 2.2.1 เข้าสู่ระบบด้วยบัญชีผู้ใช้งาน (Login)
+     * 2.2.2 ดูข้อมูลเคสส่งตัวทั้งหมดในกล่องจดหมายเข้า (View Referral Inbox)
+     * 2.2.3 ตอบรับหรือปฏิเสธเคสส่งต่อพร้อมระบุเหตุผลประกอบ (Accept or Reject Referral Cases)
+     * 2.2.4 บันทึกประวัติสัญญาณชีพและผลการลงพื้นที่ติดตามเยี่ยมบ้านคนไข้ (Record Home Tracking/Visit)
+     * 2.2.5 บันทึกรูปภาพสภาพแวดล้อมบ้านและการจัดยาแนบประกอบรายงาน (Upload Home Visit Images)
+     * 2.2.6 ดูและจัดการปฏิทินนัดหมายสำหรับเยี่ยมบ้านของคนไข้ที่รับดูแล (View and Manage Appointments)
+     * 2.2.7 ดูรายงานสถิติและข้อมูลบนแดชบอร์ดเฉพาะหน่วยงานของตน (View PCU Dashboard)
+   * **2.3 ผู้ป่วย / คนไข้ (Patient)** มี 2 ยูสเคส คือ:
+     * 2.3.1 รับอีเมลแจ้งเตือนอัตโนมัติเมื่อโรงพยาบาลสร้างเคสส่งตัว (Receive Referral Notification Email)
+     * 2.3.2 รับอีเมลแจ้งนัดหมายการลงพื้นที่เยี่ยมบ้าน และดูรายละเอียดนัดหมายผ่านตู้จดหมายอีเมล (Receive Appointment Notification Email)
+   * **2.4 ผู้ดูแลระบบ / ผู้จัดการ (Administrator / Manager)** มี 3 ยูสเคส คือ:
+     * 2.4.1 จัดการข้อมูลบัญชีผู้ใช้งานระบบและระดับสิทธิ์ของเจ้าหน้าที่ (Manage Users & Roles)
+     * 2.4.2 จัดการข้อมูลรายชื่อโรงพยาบาลและอนามัย รพ.สต. ในฐานข้อมูล (Manage Service Units)
+     * 2.4.3 เรียกดูรายงานสรุปสถิติตัวเลขการส่งต่อในภาพรวมของระบบทั้งหมด (View System Analytics and Overall Reports)
+
+---
+
+### แผนภาพ Use Case Diagram
 ```mermaid
-graph TD
-    subgraph Actors [ผู้ใช้งานระบบ]
-        H[Hospital Staff<br/>เจ้าหน้าที่ รพ. / แพทย์]
-        P[PCU Staff<br/>เจ้าหน้าที่ อนามัย / รพ.สต.]
-        PA[Patient<br/>คนไข้ / ผู้ป่วย]
+graph LR
+    %% Actors Left
+    subgraph LeftActors [ ]
+        style LeftActors fill:none,stroke:none
+        H[เจ้าหน้าที่ รพ.<br/>Hospital Staff]
+        P[เจ้าหน้าที่ PCU / รพ.สต.<br/>PCU Staff]
     end
 
-    subgraph System [ระบบติดตามและส่งต่อคนไข้]
-        UC1([1. เข้าสู่ระบบด้วย username/password หรือ Google Auth])
+    %% Use Cases (Center)
+    subgraph SystemBoundary [ระบบติดตามและส่งต่อคนไข้]
+        UC1([1. เข้าสู่ระบบ / Google Auth])
         UC2([2. ลงทะเบียน / แก้ไขข้อมูลคนไข้])
-        UC3([3. ส่งต่อคนไข้จาก รพ. ไปยัง PCU])
-        UC4([4. ตรวจสอบข้อมูลใน Inbox และตอบรับ/ปฏิเสธเคสส่งต่อ])
-        UC5([5. นัดหมายคนไข้สำหรับเยี่ยมบ้าน])
-        UC6([6. บันทึกประวัติการติดตามเยี่ยมบ้านและอัปโหลดรูปภาพ])
-        UC7([7. รับการแจ้งเตือนแบบเรียลไทม์ผ่านอีเมล SendGrid HTTP])
-        UC8([8. ดูสถิติสรุปบน Dashboard])
+        UC3([3. สร้างเคสส่งตัวผู้ป่วย])
+        UC4([4. ตรวจสอบกล่องจดหมาย Inbox])
+        UC5([5. ตอบรับ/ปฏิเสธเคสส่งต่อ])
+        UC6([6. สร้างและจัดการนัดหมาย])
+        UC7([7. บันทึกผลการเยี่ยมบ้าน])
+        UC8([8. อัปโหลดภาพแนบประวัติ])
+        UC9([9. รับอีเมลแจ้งเตือน])
+        UC10([10. ดูรายงานสถิติแดชบอร์ด])
+        UC11([11. จัดการข้อมูลผู้ใช้ระบบ])
+        UC12([12. จัดการข้อมูลหน่วยบริการ])
     end
 
-    %% Relationships
-    H --> UC1
-    H --> UC2
-    H --> UC3
-    H --> UC5
-    H --> UC8
+    %% Actors Right
+    subgraph RightActors [ ]
+        style RightActors fill:none,stroke:none
+        PA[ผู้ป่วย / คนไข้<br/>Patient]
+        A[ผู้ดูแลระบบ<br/>Administrator]
+    end
 
-    P --> UC1
-    P --> UC4
-    P --> UC5
-    P --> UC6
-    P --> UC8
+    %% Connections for Hospital Staff (Left Top)
+    H ----> UC1
+    H ----> UC2
+    H ----> UC3
+    H ----> UC6
+    H ----> UC10
 
-    PA --> UC7
+    %% Connections for PCU Staff (Left Bottom)
+    P ----> UC1
+    P ----> UC4
+    P ----> UC5
+    P ----> UC6
+    P ----> UC7
+    P ----> UC8
+    P ----> UC10
 
-    %% Extend/Include styles (Implicit)
-    UC3 -.->|Sends| UC7
-    UC5 -.->|Sends| UC7
-    UC6 -.->|Updates| UC5
+    %% Connections for Patient (Right Top)
+    UC9 <---- PA
+
+    %% Connections for Administrator (Right Bottom)
+    UC1 <---- A
+    UC11 <---- A
+    UC12 <---- A
+    UC10 <---- A
 ```
+
 
 ---
 
@@ -67,6 +120,7 @@ graph TD
 *   เจ้าหน้าที่อนามัย สามารถตอบรับหรือปฏิเสธเคสส่งต่อพร้อมบันทึกเหตุผลประกอบ (Accept or Reject Referral Cases)
 *   เจ้าหน้าที่อนามัย สามารถบันทึกประวัติสัญญาณชีพและผลการลงพื้นที่ติดตามเยี่ยมบ้านคนไข้ (Record Home Tracking/Visit)
 *   เจ้าหน้าที่อนามัย สามารถบันทึกรูปภาพสภาพแวดล้อมบ้านและการจัดยาแนบประกอบรายงาน (Upload Home Visit Images)
+*   เจ้าหน้าที่อนามัย สามารถเลือกส่งตัวกลับโรงพยาบาลแม่ข่ายเดิม (Refer Back) ทันทีในระหว่างบันทึกผลการติดตาม หากพบภาวะแทรกซ้อนรุนแรง
 *   เจ้าหน้าที่อนามัย สามารถดูและจัดการปฏิทินนัดหมายสำหรับเยี่ยมบ้านของคนไข้ที่รับดูแล (View and Manage Appointments)
 *   เจ้าหน้าที่อนามัย สามารถดูรายงานสถิติและข้อมูลบนแดชบอร์ดเฉพาะหน่วยงานของตน (View PCU Dashboard)
 
@@ -121,8 +175,8 @@ graph TD
 | **คำอธิบาย** | กระบวนการส่งต่อผู้ป่วยพ้นระยะวิกฤตจาก รพ. ไปให้ รพ.สต.ดูแลต่อ โดย รพ.สต.จะรับเคสและบันทึกประวัติสัญญาณชีพที่ได้จากการลงเยี่ยมบ้าน |
 | **เงื่อนไขก่อนหน้า (Pre-conditions)** | 1. ผู้ป่วยได้รับการจดทะเบียนในระบบ<br/>2. ได้รับการวินิจฉัยและมีคำสั่งส่งต่อการดูแลสุขภาพ |
 | **เงื่อนไขหลังจบ (Post-conditions)** | 1. สถานะใบส่งต่อ (`referral`) และนัดหมาย (`appointments`) ได้รับการปรับเป็น `completed`<br/>2. บันทึกผลวัดสุขภาพลงตาราง `tracking` และรูปถ่ายแนบลงตาราง `image` เรียบร้อย |
-| **ขั้นตอนการทำงานหลัก (Main Flow)** | 1. **[รพ. ส่งตัว]**: เจ้าหน้าที่ รพ. สร้างเคสส่งตัวผู้ป่วย ➡️ เลือก รพ.สต. ปลายทางระบุความเร่งด่วน ➡️ บันทึกข้อมูลและส่งอีเมลแจ้งอนามัยปลายทางอัตโนมัติ<br/>2. **[รพ.สต. ตอบรับ]**: เจ้าหน้าที่ รพ.สต. ตรวจสอบรายละเอียดใน Inbox และกดยอมรับ (Accept) ➡️ ระบบสร้างประวัตินัดหมายอ้างอิงอัตโนมัติ<br/>3. **[รพ.สต. บันทึกติดตาม]**: เมื่อเจ้าหน้าที่เดินทางไปตรวจคนไข้จริงเสร็จ จะมาเปิดหน้าต่าง "บันทึกผลการติดตาม" ➡️ ระบุสัญญาณชีพ (ความดันโลหิต SYS/DIA, ค่าน้ำตาล DTX, น้ำหนักตัว, อาการ และปัญหาสภาพแวดล้อมพร้อมแนบภาพถ่าย)<br/>4. เจ้าหน้าที่กดบันทึกผลการเยี่ยมบ้าน<br/>5. ระบบใช้ Transaction ทำการบันทึกตาราง `tracking` และ `image` พร้อมเปลี่ยนสถานะนัดหมายและใบส่งต่อเดิมให้กลายเป็น `completed` ทันที<br/>6. หน้าจอปรากฏแจ้งเตือนบันทึกผลสำเร็จ |
-| **ขั้นตอนสลับ (Alternative Flow)** | **[กรณีปฏิเสธเคสส่งต่อ]**<br/>2a. หากตรวจสอบพบว่าผู้ป่วยไม่ได้อยู่ในเขตรับผิดชอบของอนามัยนั้น เจ้าหน้าที่ รพ.สต. กด "ปฏิเสธ" (Reject) พร้อมบันทึกเหตุผล ➡️ ระบบส่งอีเมลแจ้งกลับไปที่ รพ. เพื่อหาแนวทางส่งตัวต่อที่อื่น<br/>**[กรณีพบสัญญาณชีพเสี่ยงอันตราย]**<br/>5a. หากข้อมูลความดันโลหิตหรือน้ำตาลอยู่ในเกณฑ์วิกฤต (Critical) ระบบจะขึ้นป๊อปอัปแจ้งเตือนให้เจ้าหน้าที่ประสานงานเพื่อส่งตัวผู้ป่วยกลับโรงพยาบาลใหญ่อย่างเร่งด่วน |
+| **ขั้นตอนการทำงานหลัก (Main Flow)** | 1. **[รพ. ส่งตัว]**: เจ้าหน้าที่ รพ. สร้างเคสส่งตัวผู้ป่วย ➡️ เลือก รพ.สต. ปลายทางระบุความเร่งด่วน ➡️ บันทึกข้อมูลและส่งอีเมลแจ้งอนามัยปลายทางอัตโนมัติ<br/>2. **[รพ.สต. ตอบรับ]**: เจ้าหน้าที่ รพ.สต. ตรวจสอบประวัติใน Inbox และกดยอมรับ (Accept) ➡️ ระบบสร้างประวัตินัดหมายอ้างอิงอัตโนมัติ<br/>3. **[รพ.สต. บันทึกติดตาม]**: เมื่อเจ้าหน้าที่เดินทางไปตรวจคนไข้จริงเสร็จ จะมาเปิดหน้าต่าง "บันทึกผลการติดตาม" ➡️ ระบุสัญญาณชีพ (ความดันโลหิต SYS/DIA, ค่าน้ำตาล DTX, น้ำหนักตัว, อาการ และปัญหาสภาพแวดล้อมพร้อมแนบภาพถ่าย)<br/>4. เจ้าหน้าที่กดบันทึกผลการเยี่ยมบ้าน<br/>5. ระบบใช้ Transaction ทำการบันทึกตาราง `tracking` และ `image` พร้อมเปลี่ยนสถานะนัดหมายและใบส่งต่อเดิมให้กลายเป็น `completed` ทันที<br/>6. หน้าจอปรากฏแจ้งเตือนบันทึกผลสำเร็จ |
+| **ขั้นตอนสลับ (Alternative Flow)** | **[กรณีปฏิเสธเคสส่งต่อ]**<br/>2a. หากตรวจสอบพบว่าผู้ป่วยไม่ได้อยู่ในเขตรับผิดชอบของอนามัยนั้น เจ้าหน้าที่ รพ.สต. กด "ปฏิเสธ" (Reject) พร้อมบันทึกเหตุผล ➡️ ระบบส่งอีเมลแจ้งกลับไปที่ รพ. เพื่อหาแนวทางส่งตัวต่อที่อื่น<br/>**[กรณีพบสัญญาณชีพเสี่ยงอันตราย]**<br/>5a. หากข้อมูลความดันโลหิตหรือน้ำตาลอยู่ในเกณฑ์วิกฤต (Critical) ระบบจะขึ้นป๊อปอัปแจ้งเตือนให้เจ้าหน้าที่ประสานงานเพื่อส่งตัวผู้ป่วยกลับโรงพยาบาลใหญ่อย่างเร่งด่วน<br/>**[กรณีส่งกลับรักษาต่อ (Refer Back)]**<br/>5b. ในขั้นตอนกรอกผลการติดตาม หากตรวจพบอาการแทรกซ้อนรุนแรง รพ.สต. สามารถเลือก "ส่งตัวกลับโรงพยาบาลด่วน (Refer Back)" ➡️ ระบบจะรันคำสั่งโอนย้ายสังกัดหลักของคนไข้กลับคืนโรงพยาบาลแม่ข่ายเดิมทันที พร้อมทั้งสร้างใบส่งตัวแถวใหม่สถานะ pending ระดับความเร่งด่วนสูงสุด (urgent) และยิงอีเมลพร้อม In-App แจ้งเตือนแผนก ER/ศูนย์ส่งต่อของ รพ. ปลายทางโดยอัตโนมัติ |
 
 ---
 
@@ -154,45 +208,208 @@ flowchart TD
 
 ---
 
-## 4. Sequence Diagram (แผนภาพลำดับขั้นการทำงาน)
-แสดงการแลกเปลี่ยนข้อมูลระหว่างส่วนประกอบต่างๆ ในระบบจริง เช่น การสร้างนัดหมายและการทำงานร่วมกับบริการภายนอก (SendGrid) ผ่าน HTTP Request
+## 4. Sequence Diagram (แผนภาพลำดับขั้นการทำงานของระบบ)
+แสดงการแลกเปลี่ยนข้อมูลระหว่างส่วนประกอบต่างๆ ของระบบย่อยทั้งหมดในระบบจริง เช่น ระบบยืนยันตัวตน, ลงทะเบียนผู้ป่วย, ระบบส่งต่อผู้ป่วย, สร้างนัดหมาย และการติดตามประเมินเยี่ยมบ้าน
 
+### 4.1 ระบบเข้าสู่ระบบยืนยันตัวตน (Authentication & Authorization System)
 ```mermaid
 sequenceDiagram
     autonumber
-    actor Staff as เจ้าหน้าที่ (รพ. / PCU)
+    actor User as ผู้ใช้งาน (รพ. / รพ.สต.)
     participant FE as หน้าบ้าน (Nuxt.js Web App)
-    participant BE as หลังบ้าน (Node.js/Express API)
-    participant DB as ฐานข้อมูล (MySQL Cloud)
+    participant BE as หลังบ้าน (Node.js/Express)
+    participant DB as ฐานข้อมูล (MySQL)
+    
+    %% Standard Login
+    Note over User, FE: กรณีเข้าสู่ระบบแบบปกติ (Username / Password)
+    User->>FE: กรอก Username & Password
+    FE->>BE: POST /api/auth/login (username, password)
+    activate BE
+    BE->>DB: SELECT * FROM user WHERE username = ?
+    activate DB
+    DB-->>BE: ส่งคืนข้อมูลแถวผู้ใช้ (รวม password_hash)
+    deactivate DB
+    BE->>BE: ใช้ bcrypt.compare() ตรวจสอบรหัสผ่าน
+    BE->>BE: สร้าง JWT Token (id, role, service_unit_id)
+    BE-->>FE: HTTP 200 (ส่งคืน Token + โปรไฟล์ผู้ใช้)
+    deactivate BE
+    FE->>FE: บันทึก Token ลง LocalStorage
+    FE-->>User: ยินดีต้อนรับและเปลี่ยนเส้นทางเข้าสู่ระบบตามสิทธิ์
+
+    %% Google Auth
+    Note over User, FE: กรณีเข้าสู่ระบบผ่าน Google OAuth
+    User->>FE: คลิกปุ่ม "เข้าสู่ระบบด้วย Google"
+    FE->>BE: POST /api/auth/google-login (accessToken)
+    activate BE
+    BE->>BE: ยิงตั๋วตรวจสอบโปรไฟล์กับ Google API เพื่อหา Email
+    BE->>DB: SELECT * FROM user_auth_providers WHERE provider_uid = ?
+    activate DB
+    DB-->>BE: ส่งคืนผลการค้นหาข้อมูล
+    deactivate DB
+    alt พบรหัส Google เชื่อมต่อในระบบแล้ว
+        BE->>BE: สร้าง JWT Token
+    else ยังไม่พบประวัติการเชื่อมต่อ (เชื่อมต่อด้วยอีเมลสิทธิ์)
+        BE->>DB: SELECT * FROM user WHERE email = ?
+        activate DB
+        DB-->>BE: ส่งคืนแถวข้อมูลผู้ใช้งานในระบบ
+        deactivate DB
+        BE->>DB: INSERT INTO user_auth_providers (user_id, provider_name='google', provider_uid)
+        BE->>BE: สร้าง JWT Token
+    end
+    BE-->>FE: HTTP 200 (Token + โปรไฟล์)
+    deactivate BE
+```
+
+---
+
+### 4.2 ระบบลงทะเบียนคนไข้ใหม่และระบบตรวจสอบข้อมูล (Patient Registration & Validation System)
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Staff as เจ้าหน้าที่ผู้บันทึก
+    participant FE as หน้าบ้าน (Nuxt.js)
+    participant BE as หลังบ้าน (Node.js/Express)
+    participant DB as ฐานข้อมูล (MySQL)
+
+    Staff->>FE: กรอกข้อมูลคนไข้ครบถ้วน (CID, ชื่อ-สกุล, วันเกิด, เพศ, เบอร์โทร, อีเมล, ที่อยู่, กลุ่มโรค)
+    FE->>BE: POST /api/patients (ข้อมูลคนไข้ + Bearer Token)
+    activate BE
+    BE->>BE: ตรวจสอบความครบถ้วนของฟิลด์สำคัญ (เลขบัตร 13 หลัก, อีเมล, ที่อยู่ ฯลฯ)
+    alt ข้อมูลสำคัญขาดหาย หรือรูปแบบข้อมูลไม่ถูกต้อง
+        BE-->>FE: HTTP 400 Bad Request (ระบุฟิลด์ข้อผิดพลาด)
+        FE-->>Staff: แจ้งเตือนความผิดพลาดและระบุช่องให้กรอกซ่อมแซม
+    else ข้อมูลครบถ้วนสมบูรณ์
+        BE->>DB: SELECT id FROM patient WHERE cid = ?
+        activate DB
+        DB-->>BE: คืนค่าผลการตรวจสอบความซ้ำซ้อน
+        deactivate DB
+        alt มีข้อมูลบัตรประชาชนในระบบแล้ว
+            BE-->>FE: HTTP 409 Conflict (เลขบัตรประชาชนซ้ำในระบบ)
+            FE-->>Staff: แจ้งเตือนเลขบัตรนี้มีในระบบแล้วเพื่อความปลอดภัย
+        else บัตรประชาชนไม่ซ้ำ
+            BE->>DB: รัน Transaction บันทึกข้อมูล
+            activate DB
+            DB->>DB: คำนวณรหัส HN ใหม่ตามรหัสหน่วยงาน + ปี พ.ศ.
+            DB->>DB: INSERT INTO patient (ข้อมูลประวัติคนไข้)
+            DB->>DB: INSERT INTO patient_disease_groups (โรคประจำตัว)
+            DB-->>BE: ยืนยันความสำเร็จพร้อม HN
+            deactivate DB
+            BE-->>FE: HTTP 201 Created (แจ้งลงทะเบียนสำเร็จพร้อมเลข HN)
+            deactivate BE
+            FE-->>Staff: ขึ้นป๊อปอัป SweetAlert2 แจ้งความสำเร็จเรียบร้อย
+        end
+    end
+```
+
+---
+
+### 4.3 ระบบส่งต่อผู้ป่วยและการจัดการสถานะ (Patient Referral System)
+```mermaid
+sequenceDiagram
+    autonumber
+    actor H_Staff as เจ้าหน้าที่ รพ.ต้นทาง
+    actor P_Staff as เจ้าหน้าที่ รพ.สต.ปลายทาง
+    participant FE as หน้าบ้าน (Nuxt.js)
+    participant BE as หลังบ้าน (Node.js/Express)
+    participant DB as ฐานข้อมูล (MySQL)
     participant SG as SendGrid HTTP API
     actor Patient as กล่องเมลคนไข้/เจ้าหน้าที่
 
-    Staff ->> FE: กรอกข้อมูลและกดปุ่ม "บันทึกนัดหมาย"
-    FE ->> BE: HTTP POST /api/patients/appointments (ข้อมูลนัด + JWT token)
+    %% สร้างใบส่งต่อ
+    H_Staff->>FE: เลือกคนไข้ -> ระบุ รพ.สต. ปลายทาง -> ระบุความเร่งด่วน & เหตุผลส่งตัว -> บันทึก
+    FE->>BE: POST /api/referrals (ข้อมูลเคสส่งตัว + JWT Token)
     activate BE
-    BE ->> BE: ตรวจสอบความถูกต้องของ Token & สิทธิ์
-    
-    BE ->> DB: INSERT INTO appointments (ข้อมูลนัดหมาย, status='pending')
+    BE->>DB: INSERT INTO referral (สถานะ = 'pending')
     activate DB
-    DB -->> BE: ส่งข้อมูลผลลัพธ์สำเร็จ และ appointment_id กลับมา
+    DB-->>BE: ส่งคืน referral_id
     deactivate DB
-    
-    BE ->> DB: ค้นหาข้อมูลอีเมลของ (คนไข้ และ เจ้าหน้าที่ผู้สร้าง)
-    activate DB
-    DB -->> BE: ส่งคืนค่าอีเมลผู้เกี่ยวข้อง
-    deactivate DB
-
-    Note over BE, SG: ทำการส่งอีเมลแบบ Asynchronous เพื่อไม่ให้หน้าเว็บค้าง
-    BE ->> SG: HTTP POST https://api.sendgrid.com/v3/mail/send (Authorization: Bearer SG_KEY)
-    activate SG
-    SG -->> BE: HTTP 202 Accepted (ส่งคำขอเข้าระบบส่งเมลแล้ว)
-    deactivate SG
-    
-    SG -->> Patient: นำส่งอีเมลนัดหมายจริงเข้าสู่ Gmail Inbox 📬
-    
-    BE -->> FE: HTTP 201 Created (แจ้งข้อมูลบันทึกสำเร็จพร้อมรายละเอียด)
+    BE->>DB: INSERT INTO notification_system (In-App แจ้ง รพ.สต. ปลายทาง)
+    BE->>SG: POST /v3/mail/send (ส่งอีเมลแจ้งเตือน รพ.สต. & ผู้ป่วย)
+    SG-->>Patient: นำส่งอีเมลนัดหมายและรายละเอียดการส่งตัวเข้าสู่ Gmail Inbox
+    BE-->>FE: HTTP 201 Created (สร้างใบส่งตัวสำเร็จ)
     deactivate BE
-    FE -->> Staff: แสดงหน้าต่างแจ้งเตือนสำเร็จ (SweetAlert2)
+    FE-->>H_Staff: ขึ้นสถานะรอ รพ.สต. ปลายทาง อนุมัติ
+
+    %% รพ.สต. ตอบรับ/ปฏิเสธ
+    P_Staff->>FE: เปิดหน้า Inbox -> ตรวจสอบประวัติเคสส่งต่อ -> กดยอมรับ (Accept) หรือปฏิเสธ (Reject)
+    FE->>BE: PUT /api/referrals/:id/status (status='accepted' หรือ 'rejected', reject_reason)
+    activate BE
+    alt ปฏิเสธเคสส่งต่อ (Rejected)
+        BE->>DB: UPDATE referral SET status='rejected', reason=CONCAT(reason, reject_reason)
+    else ยอมรับเคสส่งต่อ (Accepted)
+        BE->>DB: UPDATE referral SET status='accepted'
+        BE->>DB: UPDATE patient SET service_unit_id = รพ.สต. ปลายทาง (โอนย้ายสิทธิ์หลักคนไข้)
+    end
+    BE->>DB: INSERT INTO notification_system (In-App แจ้งกลับ รพ. ต้นทาง)
+    BE->>SG: POST /v3/mail/send (ส่งเมลผลลัพธ์ตอบรับ/ปฏิเสธ พร้อมสาเหตุกลับไปหาแพทย์ผู้ส่ง)
+    SG-->>Patient: แพทย์โรงพยาบาลใหญ่ได้รับอีเมลอัปเดตแจ้งสถานะเคสทันที
+    BE-->>FE: HTTP 200 OK (ปรับปรุงสถานะส่งต่อสำเร็จ)
+    deactivate BE
+    FE-->>P_Staff: แสดงผลสำเร็จบนหน้าต่างตารางงาน
+```
+
+---
+
+### 4.4 ระบบนัดหมายเยี่ยมบ้าน (Appointment Scheduling System)
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Staff as เจ้าหน้าที่ (รพ. / รพ.สต.)
+    participant FE as หน้าบ้าน (Nuxt.js)
+    participant BE as หลังบ้าน (Node.js/Express)
+    participant DB as ฐานข้อมูล (MySQL)
+    participant SG as SendGrid HTTP API
+    actor Patient as กล่องเมลคนไข้/เจ้าหน้าที่
+
+    Staff->>FE: เลือกคนไข้ -> กำหนดวันนัด เวลา เหตุผลนัด และผู้ตรวจนัด -> กดบันทึก
+    FE->>BE: POST /api/appointments (ข้อมูลนัดหมาย + Token)
+    activate BE
+    alt เลือกวันนัดหมายย้อนหลัง
+        BE-->>FE: HTTP 400 Bad Request (วันเวลานัดหมายย้อนหลังไม่ถูกต้อง)
+        FE-->>Staff: แจ้งเตือนข้อผิดพลาดและบังคับให้กรอกวันเวลาใหม่
+    else วันเวลานัดหมายถูกต้อง
+        BE->>DB: INSERT INTO appointments (สถานะ = 'pending')
+        activate DB
+        DB-->>BE: ส่งคืน appointment_id
+        deactivate DB
+        BE->>DB: SELECT ดึงข้อมูลอีเมลของคนไข้และเจ้าหน้าที่ผู้จดบันทึก
+        activate DB
+        DB-->>BE: คืนค่ารายการอีเมลผู้เกี่ยวข้อง
+        deactivate DB
+        BE->>SG: POST /v3/mail/send (เรียกส่งอีเมลกำหนดนัดหมายเยี่ยมบ้าน)
+        SG-->>Patient: จัดส่งอีเมลกำหนดนัดหมายเยี่ยมบ้านคนไข้จริงเข้า Inbox 📬
+        BE-->>FE: HTTP 201 Created (สร้างปฏิทินนัดหมายสำเร็จ)
+        deactivate BE
+        FE-->>Staff: แสดงหน้า SweetAlert2 แจ้งนัดคนไข้เรียบร้อย
+    end
+```
+
+---
+
+### 4.5 ระบบบันทึกผลการติดตามเยี่ยมบ้าน (Home Visit Tracking System)
+```mermaid
+sequenceDiagram
+    autonumber
+    actor PCU as เจ้าหน้าที่ รพ.สต. ปลายทาง
+    participant FE as หน้าบ้าน (Nuxt.js)
+    participant BE as หลังบ้าน (Node.js/Express)
+    participant DB as ฐานข้อมูล (MySQL)
+
+    PCU->>FE: ตรวจร่างกายคนไข้เสร็จ -> บันทึกสัญญาณชีพ (ความดัน, น้ำตาล, น้ำหนัก) และอัปโหลดภาพถ่ายสภาพบ้าน
+    FE->>BE: POST /api/tracking (ข้อมูลตรวจวัดสัญญาณชีพ + แนบไฟล์รูปภาพแบบ Multipart FormData)
+    activate BE
+    BE->>BE: ประเมินระดับความเสี่ยงของคนไข้ (normal, warning, critical)
+    BE->>DB: รัน Database Transaction เพื่อความถูกต้องของข้อมูลทั้งหมด
+    activate DB
+    DB->>DB: INSERT INTO tracking (บันทึกข้อมูลสัญญาณชีพและระดับความเสี่ยง)
+    DB->>DB: INSERT INTO image (เก็บประวัติไฟล์รูปภาพแนบและโฟลเดอร์จัดเก็บ)
+    DB->>DB: UPDATE appointments SET status = 'completed' (สิ้นสุดสถานะนัดหมายเยี่ยมนี้)
+    DB->>DB: UPDATE referral SET status = 'completed' (หากเป็นนัดเชื่อมเคสส่งต่อ ให้สิ้นสุดการส่งตัวสมบูรณ์)
+    DB-->>BE: ส่งผลลัพธ์ยืนยันการบันทึกสำเร็จ
+    deactivate DB
+    BE-->>FE: HTTP 201 Created (บันทึกและประเมินข้อมูลสำเร็จ)
+    deactivate BE
+    FE-->>PCU: แสดงประวัติความเสี่ยงสีประจำเคส และโชว์ไทม์ไลน์ภาพถ่ายใหม่ล่าสุด
 ```
 
 ---
@@ -320,95 +537,177 @@ erDiagram
 ---
 
 ## 6. Data Dictionary (พจนานุกรมข้อมูล)
-โครงสร้างฟิลด์ข้อมูลอย่างละเอียดของตารางที่สำคัญ เพื่อสำหรับใส่ในเอกสารบทที่ 3 ของเล่มรายงาน
+โครงสร้างฟิลด์ข้อมูลอย่างละเอียดของตารางที่สำคัญเพื่อสำหรับใส่ในเอกสารบทที่ 3 ของเล่มรายงานตามรูปแบบมาตรฐานวิชาการ
 
 ### ตารางที่ 1: `patient` (ข้อมูลคนไข้)
 เก็บรายละเอียดประวัติข้อมูลส่วนตัวของคนไข้ที่รับการส่งตัวหรือนัดหมาย
 
-| ชื่อคอลัมน์ (Column Name) | ประเภทข้อมูล (Data Type) | คีย์หลัก/นอก (Key) | ค่าว่างได้ไหม (Null) | คำอธิบาย (Description) |
-| :--- | :--- | :---: | :---: | :--- |
-| `id` | INT AUTO_INCREMENT | PK | NO | ไอดีอ้างอิงลำดับของข้อมูลผู้ป่วย |
-| `service_unit_id` | INT | FK | NO | อ้างอิงหน่วยบริการที่จดทะเบียนแรกรับ (`service_unit.id`) |
-| `hn_number` | VARCHAR(50) | UK | NO | หมายเลขประจำตัวผู้ป่วยของโรงพยาบาล (HN Number) |
-| `cid` | VARCHAR(13) | UK | NO | เลขประจำตัวประชาชน 13 หลักของผู้ป่วย |
-| `first_name` | VARCHAR(100) | - | NO | ชื่อจริงของผู้ป่วย (ภาษาไทย) |
-| `last_name` | VARCHAR(100) | - | NO | นามสกุลของผู้ป่วย (ภาษาไทย) |
-| `date_of_birth` | DATE | - | NO | วัน/เดือน/ปี เกิดของผู้ป่วย |
-| `gender` | VARCHAR(10) | - | NO | เพศของผู้ป่วย (ชาย, หญิง, อื่นๆ) |
-| `phone` | VARCHAR(20) | - | YES | เบอร์โทรศัพท์ติดต่อของผู้ป่วยหรือญาติ |
-| `email` | VARCHAR(255) | - | YES | อีเมลสำหรับใช้ในการส่งแจ้งเตือนนัดหมายและส่งตัว |
-| `address` | TEXT | - | YES | ที่อยู่ปัจจุบันสำหรับการลงพื้นที่เยี่ยมบ้าน |
+| No. | Field Name | Type | Length | Format | Description | Constraint |
+| :---: | :--- | :--- | :---: | :--- | :--- | :--- |
+| 1 | id | int | 11 | ตัวเลข | ไอดีลำดับข้อมูลผู้ป่วย (รหัสภายใน) | Primary key |
+| 2 | service_unit_id | int | 11 | ตัวเลข | รหัสอ้างอิงหน่วยบริการที่แรกรับ | Foreign key |
+| 3 | hn_number | varchar | 50 | ตัวอักษร | หมายเลขประจำตัวผู้ป่วย (HN) | Unique key |
+| 4 | cid | varchar | 13 | ตัวอักษร | เลขประจำตัวประชาชน 13 หลัก | Unique key |
+| 5 | first_name | varchar | 100 | ตัวอักษร | ชื่อจริงผู้ป่วย (ภาษาไทย) | Not Null |
+| 6 | last_name | varchar | 100 | ตัวอักษร | นามสกุลผู้ป่วย (ภาษาไทย) | Not Null |
+| 7 | date_of_birth | date | 0 | วันที่ | วัน/เดือน/ปีเกิดของผู้ป่วย | Not Null |
+| 8 | gender | varchar | 10 | ตัวอักษร | เพศของผู้ป่วย | Not Null |
+| 9 | phone | varchar | 20 | ตัวอักษร | เบอร์โทรศัพท์ติดต่อของผู้ป่วยหรือญาติ | Null |
+| 10 | email | varchar | 255 | ตัวอักษร | อีเมลสำหรับการส่งแจ้งเตือน | Null |
+| 11 | address | text | 0 | ตัวอักษร | ที่อยู่สำหรับการลงพื้นที่เยี่ยมบ้าน | Null |
 
 ---
 
 ### ตารางที่ 2: `referral` (ประวัติการส่งต่อผู้ป่วย)
-ใช้สำหรับบริหารจัดเก็บข้อมูลการส่งเคสจากโรงพยาบาลใหญ่ไปยัง รพ.สต./อนามัย
+ใช้สำหรับจัดเก็บข้อมูลและประวัติการส่งเคสจากโรงพยาบาลไปยัง รพ.สต.
 
-| ชื่อคอลัมน์ (Column Name) | ประเภทข้อมูล (Data Type) | คีย์หลัก/นอก (Key) | ค่าว่างได้ไหม (Null) | คำอธิบาย (Description) |
-| :--- | :--- | :---: | :---: | :--- |
-| `id` | INT AUTO_INCREMENT | PK | NO | ไอดีอ้างอิงลำดับของข้อมูลส่งตัว |
-| `patient_id` | INT | FK | NO | ผู้ป่วยที่ต้องการส่งตัว (`patient.id`) |
-| `appointment_id` | INT | FK | YES | ลิงก์เชื่อมการนัดหมายที่สร้างขึ้นเพื่อรับงานส่งต่อ |
-| `from_service_unit_id`| INT | FK | NO | หน่วยงานผู้ส่งต้นทาง (`service_unit.id`) |
-| `to_service_unit_id` | INT | FK | NO | หน่วยงานผู้รับปลายทาง (`service_unit.id`) |
-| `referred_by_user_id`| INT | FK | NO | แพทย์หรือเจ้าหน้าที่ผู้กดส่งเคส (`user.id`) |
-| `receiver_user_id` | INT | FK | YES | เจ้าหน้าที่ อนามัยที่กดรับเคสที่ส่งมา (`user.id`) |
-| `referral_date` | DATETIME | - | NO | วันและเวลาที่ลงบันทึกส่งเคสออก |
-| `received_at` | DATETIME | - | YES | วันและเวลาที่เจ้าหน้าที่ปลายทางกดตอบรับเคส |
-| `reason` | TEXT | - | YES | เหตุผลทางการแพทย์หรืออาการทางคลินิกของการส่งตัว |
-| `urgency_level` | VARCHAR(20) | - | NO | ระดับความเร่งด่วน (`low`, `medium`, `high`, `critical`) |
-| `status` | VARCHAR(20) | - | NO | สถานะการส่งตัว (`pending`, `accepted`, `rejected`, `completed`) |
-| `reject_reason` | TEXT | - | YES | เหตุผลในกรณีที่ปลายทางปฏิเสธเคส |
+| No. | Field Name | Type | Length | Format | Description | Constraint |
+| :---: | :--- | :--- | :---: | :--- | :--- | :--- |
+| 1 | id | int | 11 | ตัวเลข | ไอดีลำดับข้อมูลการส่งตัว | Primary key |
+| 2 | patient_id | int | 11 | ตัวเลข | รหัสผู้ป่วยที่ถูกส่งต่อ | Foreign key |
+| 3 | appointment_id | int | 11 | ตัวเลข | รหัสการนัดหมายเยี่ยมบ้านที่เชื่อมโยง | Foreign key (Null) |
+| 4 | from_service_unit_id | int | 11 | ตัวเลข | รหัสหน่วยงานผู้ส่งต้นทาง | Foreign key |
+| 5 | to_service_unit_id | int | 11 | ตัวเลข | รหัสหน่วยงานผู้รับปลายทาง | Foreign key |
+| 6 | referred_by_user_id | int | 11 | ตัวเลข | รหัสเจ้าหน้าที่ผู้กดส่งตัว | Foreign key |
+| 7 | receiver_user_id | int | 11 | ตัวเลข | รหัสเจ้าหน้าที่ผู้กดตอบรับเคส | Foreign key (Null) |
+| 8 | referral_date | datetime | 0 | วันที่ | วันและเวลาที่ลงบันทึกส่งเคส | Not Null |
+| 9 | received_at | datetime | 0 | วันที่ | วันและเวลาที่กดรับเคส | Null |
+| 10 | reason | text | 0 | ตัวอักษร | เหตุผลทางการแพทย์หรืออาการสำหรับการส่งตัว | Null |
+| 11 | urgency_level | varchar | 20 | ตัวอักษร | ระดับความเร่งด่วน (low, medium, high, critical) | Not Null |
+| 12 | status | varchar | 20 | ตัวอักษร | สถานะเคส (pending, accepted, rejected, completed) | Not Null |
+| 13 | reject_reason | text | 0 | ตัวอักษร | ระบุเหตุผลกรณีปลายทางกดปฏิเสธเคส | Null |
 
 ---
 
 ### ตารางที่ 3: `tracking` (ประวัติการเยี่ยมบ้าน/ติดตามคนไข้)
-เก็บข้อมูลผลการตรวจประเมินระดับสัญญาณชีพและประวัติทางสุขภาพเมื่อไปติดตามคนไข้
+เก็บข้อมูลผลการตรวจประเมินระดับสัญญาณชีพและประวัติทางสุขภาพเมื่อลงพื้นที่เยี่ยมบ้าน
 
-| ชื่อคอลัมน์ (Column Name) | ประเภทข้อมูล (Data Type) | คีย์หลัก/นอก (Key) | ค่าว่างได้ไหม (Null) | คำอธิบาย (Description) |
-| :--- | :--- | :---: | :---: | :--- |
-| `id` | INT AUTO_INCREMENT | PK | NO | ไอดีอ้างอิงของใบประเมินการเยี่ยมบ้าน |
-| `patient_id` | INT | FK | NO | รหัสคนไข้ที่ได้รับการติดตามประเมินผล (`patient.id`) |
-| `appointment_id` | INT | FK | YES | อ้างอิงรอบการนัดหมายเยี่ยมบ้าน (`appointments.id`) |
-| `tracked_by_user_id` | INT | FK | NO | เจ้าหน้าที่ผู้เดินทางไปเยี่ยมบ้านและตรวจวัด (`user.id`) |
-| `tracking_date` | DATETIME | - | NO | วันและเวลาที่ลงพื้นที่เยี่ยมบ้านจริง |
-| `symptoms_detail` | TEXT | - | YES | รายละเอียดอาการแสดงและสุขภาพทางคลินิกทั่วไป |
-| `health_status` | VARCHAR(20) | - | NO | การจำแนกความเสี่ยงของคนไข้ (`normal`, `warning`, `critical`) |
-| `bp_sys` | INT | - | YES | ค่าความดันตัวบน (Systolic Blood Pressure) มิลลิเมตรปรอท |
-| `bp_dia` | INT | - | YES | ค่าความดันตัวล่าง (Diastolic Blood Pressure) มิลลิเมตรปรอท |
-| `sugar` | INT | - | YES | ค่าน้ำตาลในเลือดจากปลายนิ้ว (DTX/Sugar) มิลลิกรัม/เดซิลิตร |
-| `weight` | DECIMAL(5,2) | - | YES | น้ำหนักตัวปัจจุบันของผู้ป่วย (กิโลกรัม) |
-| `problems` | TEXT | - | YES | ปัญหาและอุปสรรคที่พบเจอ เช่น สภาพจิตใจ สภาพแวดล้อม |
-| `advice` | TEXT | - | YES | คำแนะนำทางการพยาบาลหรือการกินยาที่มอบให้คนไข้ |
-| `location` | VARCHAR(255) | - | YES | พิกัดหรือตำแหน่งที่อยู่อ้างอิงในการเยี่ยม |
-| `next_appointment_date`| DATETIME | - | YES | กำหนดวันนัดหมายเพื่อเดินทางมาเยี่ยมในรอบถัดไป |
+| No. | Field Name | Type | Length | Format | Description | Constraint |
+| :---: | :--- | :--- | :---: | :--- | :--- | :--- |
+| 1 | id | int | 11 | ตัวเลข | ไอดีลำดับประวัติการเยี่ยมบ้าน | Primary key |
+| 2 | patient_id | int | 11 | ตัวเลข | รหัสคนไข้ที่ได้รับการติดตามประเมินผล | Foreign key |
+| 3 | appointment_id | int | 11 | ตัวเลข | รหัสรอบนัดหมายเยี่ยมบ้านที่เชื่อมโยง | Foreign key (Null) |
+| 4 | tracked_by_user_id | int | 11 | ตัวเลข | รหัสเจ้าหน้าที่ผู้ลงพื้นที่เยี่ยมบ้าน | Foreign key |
+| 5 | tracking_date | datetime | 0 | วันที่ | วันและเวลาที่ลงพื้นที่จริง | Not Null |
+| 6 | symptoms_detail | text | 0 | ตัวอักษร | รายละเอียดอาการและสุขภาพทางคลินิกทั่วไป | Null |
+| 7 | health_status | varchar | 20 | ตัวอักษร | จำแนกความเสี่ยงคนไข้ (normal, warning, critical) | Not Null |
+| 8 | bp_sys | int | 11 | ตัวเลข | ค่าความดันตัวบน (mmHg) | Null |
+| 9 | bp_dia | int | 11 | ตัวเลข | ค่าความดันตัวล่าง (mmHg) | Null |
+| 10 | sugar | int | 11 | ตัวเลข | ค่าน้ำตาลในเลือดจากปลายนิ้ว (mg/dL) | Null |
+| 11 | weight | decimal | 5,2 | ทศนิยม | น้ำหนักตัวปัจจุบันของผู้ป่วย (กก.) | Null |
+| 12 | problems | text | 0 | ตัวอักษร | อุปสรรค ปัญหาสภาพแวดล้อมหรือจิตใจที่พบ | Null |
+| 13 | advice | text | 0 | ตัวอักษร | คำแนะนำพยาบาลหรือการใช้ยาที่มอบให้ | Null |
+| 14 | location | varchar | 255 | ตัวอักษร | พิกัดหรือตำแหน่งที่อยู่อ้างอิง (GPS) | Null |
+| 15 | next_appointment_date | datetime | 0 | วันที่ | วันและเวลานัดหมายเข้าเยี่ยมในรอบถัดไป | Null |
 
 ---
 
 ### ตารางที่ 4: `appointments` (การนัดหมายของคนไข้)
-เก็บข้อมูลปฏิทินนัดหมายในการเยี่ยมหรือรับบริการ
+เก็บข้อมูลปฏิทินนัดหมายในการเยี่ยมบ้านหรือรับบริการสุขภาพ
 
-| ชื่อคอลัมน์ (Column Name) | ประเภทข้อมูล (Data Type) | คีย์หลัก/นอก (Key) | ค่าว่างได้ไหม (Null) | คำอธิบาย (Description) |
-| :--- | :--- | :---: | :---: | :--- |
-| `id` | INT AUTO_INCREMENT | PK | NO | ไอดีรหัสการนัดหมาย |
-| `patient_id` | INT | FK | NO | ลิงก์ไปยังข้อมูลผู้ป่วยที่มีการนัดหมาย (`patient.id`) |
-| `doctor_id` | INT | FK | NO | เจ้าหน้าที่ที่ได้รับมอบหมายให้ออกตรวจตามนัด (`user.id`) |
-| `appointment_date` | DATETIME | - | NO | วันที่และเวลาที่นัดหมายทำการตรวจ |
-| `reason` | TEXT | - | YES | วัตถุประสงค์หรือประเด็นที่นัดเพื่อตรวจประเมิน |
-| `status` | VARCHAR(20) | - | NO | สถานะการนัดหมาย (`pending`, `completed`, `missed`, `cancelled`) |
+| No. | Field Name | Type | Length | Format | Description | Constraint |
+| :---: | :--- | :--- | :---: | :--- | :--- | :--- |
+| 1 | id | int | 11 | ตัวเลข | รหัสการนัดหมาย | Primary key |
+| 2 | patient_id | int | 11 | ตัวเลข | รหัสผู้ป่วย | Foreign key |
+| 3 | doctor_id | int | 11 | ตัวเลข | รหัสแพทย์/เจ้าหน้าที่ผู้นัดหมาย | Foreign key |
+| 4 | appointment_date | datetime | 0 | วันที่ | วันและเวลานัดหมาย | Not Null |
+| 5 | reason | text | 0 | ตัวอักษร | เหตุผลการนัดหมาย | Null |
+| 6 | status | varchar | 20 | ตัวอักษร | สถานะการนัดหมาย (pending, completed, missed, cancelled) | Not Null |
 
 ---
 
 ### ตารางที่ 5: `user` (ผู้ใช้ระบบ/เจ้าหน้าที่ปฏิบัติงาน)
-จัดเก็บรายละเอียดโปรไฟล์และสิทธิ์การทำงานของบุคลากรทางการแพทย์ในระบบ
+จัดเก็บรายละเอียดโปรไฟล์และระดับสิทธิ์การทำงานของบุคลากรในระบบ
 
-| ชื่อคอลัมน์ (Column Name) | ประเภทข้อมูล (Data Type) | คีย์หลัก/นอก (Key) | ค่าว่างได้ไหม (Null) | คำอธิบาย (Description) |
-| :--- | :--- | :---: | :---: | :--- |
-| `id` | INT AUTO_INCREMENT | PK | NO | ไอดีสำหรับอ้างอิงตัวบุคคลของเจ้าหน้าที่ |
-| `username` | VARCHAR(100) | UK | NO | บัญชีผู้ใช้งานระบบ (Unique Username) |
-| `password_hash` | VARCHAR(255) | - | NO | รหัสผ่านที่ได้รับการเข้ารหัสความปลอดภัยด้วย bcrypt |
-| `first_name` | VARCHAR(100) | - | NO | ชื่อจริงของเจ้าหน้าที่สาธารณสุข |
-| `last_name` | VARCHAR(100) | - | NO | นามสกุลของเจ้าหน้าที่สาธารณสุข |
-| `role` | VARCHAR(50) | - | NO | ระดับสิทธิ์ทำงาน (`admin`, `manager`, `hospital_staff`, `pcu_staff`) |
-| `service_unit_id` | INT | FK | YES | หน่วยบริการทางการแพทย์ที่สังกัดทำงานอยู่ (`service_unit.id`) |
-| `email` | VARCHAR(255) | - | YES | อีเมลติดต่อสำหรับการรับแจ้งเตือนระบบงานส่งตัวนัดหมาย |
+| No. | Field Name | Type | Length | Format | Description | Constraint |
+| :---: | :--- | :--- | :---: | :--- | :--- | :--- |
+| 1 | id | int | 11 | ตัวเลข | รหัสอ้างอิงของเจ้าหน้าที่ | Primary key |
+| 2 | username | varchar | 100 | ตัวอักษร | ชื่อบัญชีผู้ใช้งานระบบ | Unique key |
+| 3 | password_hash | varchar | 255 | ตัวอักษร | รหัสผ่านที่เข้ารหัสความปลอดภัยด้วย bcrypt | Not Null |
+| 4 | first_name | varchar | 100 | ตัวอักษร | ชื่อจริงเจ้าหน้าที่ | Not Null |
+| 5 | last_name | varchar | 100 | ตัวอักษร | นามสกุลเจ้าหน้าที่ | Not Null |
+| 6 | role | varchar | 50 | ตัวอักษร | ระดับสิทธิ์ (admin, manager, hospital_staff, pcu_staff) | Not Null |
+| 7 | service_unit_id | int | 11 | ตัวเลข | รหัสหน่วยงานที่สังกัดปฏิบัติงาน | Foreign key (Null) |
+| 8 | email | varchar | 255 | ตัวอักษร | อีเมลติดต่อรับแจ้งเตือนระบบงาน | Null |
+
+---
+
+### ตารางที่ 6: `service_unit` (ข้อมูลหน่วยงาน/โรงพยาบาล/รพ.สต.)
+จัดเก็บรายละเอียดและรหัสหน่วยบริการสาธารณสุขในเครือข่าย
+
+| No. | Field Name | Type | Length | Format | Description | Constraint |
+| :---: | :--- | :--- | :---: | :--- | :--- | :--- |
+| 1 | id | int | 11 | ตัวเลข | รหัสอ้างอิงหน่วยงานบริการ | Primary key |
+| 2 | unit_code | varchar | 50 | ตัวอักษร | รหัสประจำหน่วยงาน (ใช้สร้างรหัส HN) | Unique key |
+| 3 | name | varchar | 255 | ตัวอักษร | ชื่อโรงพยาบาลหรือ รพ.สต. (ภาษาไทย) | Not Null |
+| 4 | type | varchar | 50 | ตัวอักษร | ประเภทหน่วยบริการ (เช่น Hospital, Health Center) | Not Null |
+| 5 | address | varchar | 255 | ตัวอักษร | ที่ตั้งทางกายภาพของหน่วยงาน | Null |
+| 6 | province | varchar | 100 | ตัวอักษร | จังหวัดที่สังกัด | Null |
+| 7 | district | varchar | 100 | ตัวอักษร | อำเภอ/เขตที่สังกัด | Null |
+| 8 | sub_district | varchar | 100 | ตัวอักษร | ตำบล/แขวงที่สังกัด | Null |
+| 9 | phone | varchar | 20 | ตัวอักษร | เบอร์โทรศัพท์ติดต่อของหน่วยงาน | Null |
+| 10 | status | varchar | 20 | ตัวอักษร | สถานะการทำงาน (Active, Inactive) | Not Null |
+
+---
+
+### ตารางที่ 7: `user_auth_providers` (การยืนยันตัวตนภายนอก / Google Auth)
+เก็บรายละเอียดการเชื่อมโยงบัญชี Google OAuth เข้ากับบัญชีผู้ใช้ระบบ
+
+| No. | Field Name | Type | Length | Format | Description | Constraint |
+| :---: | :--- | :--- | :---: | :--- | :--- | :--- |
+| 1 | id | int | 11 | ตัวเลข | รหัสอ้างอิงลำดับประวัติการเชื่อมโยง | Primary key |
+| 2 | user_id | int | 11 | ตัวเลข | รหัสเจ้าหน้าที่ผู้ผูกบัญชี | Foreign key |
+| 3 | provider_name | varchar | 50 | ตัวอักษร | ชื่อผู้ให้บริการยืนยันตัวตน (เช่น 'google') | Not Null |
+| 4 | provider_uid | varchar | 255 | ตัวอักษร | รหัสระบุตัวตนภายนอกเฉพาะตัว (Google UID) | Unique key |
+
+---
+
+### ตารางที่ 8: `underlying_disease` (ข้อมูลสารบบโรคประจำตัว)
+จัดเก็บสารบบรายชื่อโรคประจำตัวและรหัสวินิจฉัยทางการแพทย์มาตรฐานสากล
+
+| No. | Field Name | Type | Length | Format | Description | Constraint |
+| :---: | :--- | :--- | :---: | :--- | :--- | :--- |
+| 1 | id | int | 11 | ตัวเลข | รหัสกลุ่มโรคอ้างอิง | Primary key |
+| 2 | name | varchar | 255 | ตัวอักษร | ชื่อกลุ่มโรค (เช่น 'โรคเบาหวาน', 'โรคความดัน') | Unique key |
+| 3 | icd10_code | varchar | 20 | ตัวอักษร | รหัสมาตรฐานวินิจฉัยโรคทางการแพทย์ (ICD-10) | Null |
+| 4 | description | text | 0 | ตัวอักษร | คำนิยามหรือรายละเอียดทางวิชาการของกลุ่มโรค | Null |
+
+---
+
+### ตารางที่ 9: `patient_disease_groups` (กลุ่มโรคประจำตัวของผู้ป่วย)
+ตารางจับคู่ความสัมพันธ์แบบ Many-to-Many ระหว่างข้อมูลผู้ป่วยและโรคประจำตัว
+
+| No. | Field Name | Type | Length | Format | Description | Constraint |
+| :---: | :--- | :--- | :---: | :--- | :--- | :--- |
+| 1 | id | int | 11 | ตัวเลข | ไอดีลำดับความสัมพันธ์ | Primary key |
+| 2 | patient_id | int | 11 | ตัวเลข | รหัสผู้ป่วย | Foreign key |
+| 3 | disease_id | int | 11 | ตัวเลข | รหัสโรคประจำตัว | Foreign key |
+
+---
+
+### ตารางที่ 10: `image` (ข้อมูลการแนบรูปภาพรายงานเยี่ยมบ้าน)
+จัดเก็บพิกัดเส้นทางไฟล์และเมทาดาต้าของรูปภาพที่แนบประกอบการบันทึกติดตามเยี่ยมบ้าน
+
+| No. | Field Name | Type | Length | Format | Description | Constraint |
+| :---: | :--- | :--- | :---: | :--- | :--- | :--- |
+| 1 | id | int | 11 | ตัวเลข | ไอดีลำดับไฟล์รูปภาพแนบ | Primary key |
+| 2 | reference_type | varchar | 50 | ตัวอักษร | ชนิดเอกสารอ้างอิง (เช่น 'tracking', 'referral') | Not Null |
+| 3 | reference_id | int | 11 | ตัวเลข | ไอดีระเบียนข้อมูลของตารางอ้างอิง | Not Null |
+| 4 | file_name | varchar | 255 | ตัวอักษร | ชื่อไฟล์ดั้งเดิมของรูปภาพ | Not Null |
+| 5 | file_path | varchar | 255 | ตัวอักษร | เส้นทางที่จัดเก็บบนเซิร์ฟเวอร์ (Physical Path) | Not Null |
+| 6 | file_type | varchar | 100 | ตัวอักษร | ชนิดข้อมูลและฟอร์แมต (Mime Type เช่น image/jpeg) | Not Null |
+| 7 | uploaded_by | int | 11 | ตัวเลข | รหัสเจ้าหน้าที่ผู้ถ่ายและอัปโหลด | Foreign key |
+| 8 | uploaded_at | datetime | 0 | วันที่ | วันและเวลาที่บันทึกอัปโหลดรูปภาพ | Not Null |
+
+---
+
+### ตารางที่ 11: `notification_system` (ระบบบันทึกประวัติการแจ้งเตือนภายใน)
+จัดเก็บข้อความและสถานะการเปิดอ่านของการแจ้งเตือนเจ้าหน้าที่ในตัวเว็บแอปพลิเคชัน
+
+| No. | Field Name | Type | Length | Format | Description | Constraint |
+| :---: | :--- | :--- | :---: | :--- | :--- | :--- |
+| 1 | id | int | 11 | ตัวเลข | รหัสลำดับบันทึกข้อความแจ้งเตือน | Primary key |
+| 2 | user_id | int | 11 | ตัวเลข | รหัสเจ้าหน้าที่ผู้รับการแจ้งเตือน | Foreign key |
+| 3 | title | varchar | 255 | ตัวอักษร | หัวข้อเรื่องของการแจ้งเตือน | Not Null |
+| 4 | message | text | 0 | ตัวอักษร | รายละเอียดเนื้อหาข้อความ | Not Null |
+| 5 | is_read | tinyint | 1 | ตัวเลข | สถานะการเปิดอ่านข้อความ (0 = ยังไม่ได้อ่าน, 1 = อ่านแล้ว) | Not Null |

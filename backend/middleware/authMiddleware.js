@@ -3,17 +3,26 @@ const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_hospitalis_key';
 
 // 1. Middleware ตรวจสอบ Token ทั่วไป
 const authenticateToken = (req, res, next) => {
+  console.log(`[Auth Log] Incoming Request: ${req.method} ${req.originalUrl}`);
+  console.log('[Auth Log] Headers received:', JSON.stringify(req.headers));
+
   const authHeader = req.headers['authorization'];
+  console.log('[Auth Log] authorization header:', authHeader);
+
   const token = authHeader && authHeader.split(' ')[1];
+  console.log('[Auth Log] Extracted token:', token);
 
   if (!token) {
+    console.log('[Auth Log] No token found. Access denied.');
     return res.status(401).json({ message: 'ไม่พบ Token การเข้าถึงถูกปฏิเสธ' });
   }
 
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
+      console.log('[Auth Log] Token verification failed:', err.message);
       return res.status(403).json({ message: 'Token ไม่ถูกต้อง หรือหมดอายุ' });
     }
+    console.log('[Auth Log] Token verified successfully for user:', decoded.user.username);
     req.user = decoded.user;
     next();
   });

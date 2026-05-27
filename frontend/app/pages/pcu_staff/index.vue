@@ -229,16 +229,8 @@
                   </td>
                   <td class="py-4 px-4 text-center">
                     <div class="flex items-center justify-center gap-2 text-sm font-medium">
-                      <button 
-                        @click="openFollowUpModal(patient)" 
-                        :class="isFutureDate(patient.nextVisitDate) ? 'text-slate-300 cursor-not-allowed' : 'text-[#00685f] hover:text-[#005049] transition-colors'" 
-                        :title="isFutureDate(patient.nextVisitDate) ? 'ยังไม่ถึงกำหนดวันนัด' : 'บันทึกผล'"
-                      >
-                        บันทึกผล
-                      </button>
-                      <span class="text-slate-300">|</span>
-                      <button @click="openHistoryModal(patient)" class="text-slate-500 hover:text-slate-700 transition-colors" title="ดูประวัติ">
-                        ประวัติ
+                      <button @click="openHistoryModal(patient)" class="text-[#00685f] hover:text-[#005049] transition-colors" title="ดูประวัติ">
+                        ดูประวัติ
                       </button>
                     </div>
                   </td>

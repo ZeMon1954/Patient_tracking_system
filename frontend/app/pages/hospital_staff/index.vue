@@ -747,10 +747,12 @@
             <div class="space-y-1.5">
               <label class="label-style">ระดับความเร่งด่วน <span class="text-rose-500">*</span></label>
               <select v-model="referralForm.urgency_level" class="input-style">
-                <option value="normal">ปกติ</option>
-                <option value="urgent">ฉุกเฉิน</option>
+                <option value="low">ปกติ</option>
+                <option value="medium">ปานกลาง</option>
+                <option value="high">สูง</option>
+                <option value="critical">วิกฤต</option>
               </select>
-              <p v-if="referralForm.urgency_level === 'urgent'" class="text-xs text-red-500 font-medium mt-1">⚠️ การส่งต่อฉุกเฉินจะแจ้งเตือนสูง</p>
+              <p v-if="referralForm.urgency_level === 'high' || referralForm.urgency_level === 'critical'" class="text-xs text-red-500 font-medium mt-1">⚠️ การส่งต่อเร่งด่วน/วิกฤตจะแจ้งเตือนสูง</p>
             </div>
           </div>
         </div>
@@ -859,10 +861,10 @@ const resetApptForm = () => Object.assign(apptForm, {
 })
 
 const referralForm = reactive({
-  to_service_unit_id: '', referred_by_user_id: '', referral_date: '', referral_time: '', reason: '', appointment_id: null, urgency_level: 'normal'
+  to_service_unit_id: '', referred_by_user_id: '', referral_date: '', referral_time: '', reason: '', appointment_id: null, urgency_level: 'low'
 })
 const resetReferralForm = () => Object.assign(referralForm, {
-  to_service_unit_id: '', referred_by_user_id: '', referral_date: '', referral_time: '', reason: '', appointment_id: null, urgency_level: 'normal'
+  to_service_unit_id: '', referred_by_user_id: '', referral_date: '', referral_time: '', reason: '', appointment_id: null, urgency_level: 'low'
 })
 
 // ============= Helpers =============

@@ -155,8 +155,10 @@
               <div class="relative">
                 <select v-model="f4.urgency" class="filter-select">
                   <option value="">ทั้งหมด</option>
-                  <option value="ฉุกเฉิน">ฉุกเฉิน</option>
-                  <option value="ปกติ">ปกติ</option>
+                  <option value="low">ปกติ</option>
+                  <option value="medium">ปานกลาง</option>
+                  <option value="high">สูง</option>
+                  <option value="critical">วิกฤต</option>
                 </select>
                 <span class="material-symbols-outlined abs-icon">expand_more</span>
               </div>
@@ -376,10 +378,10 @@
                     <td class="py-3 px-4 font-semibold text-[#006399]">{{ r.to_unit_name || '-' }}</td>
                     <td class="py-3 px-4 text-slate-500 max-w-[180px] truncate text-xs">{{ r.reason }}</td>
                     <td class="py-3 px-4 text-center">
-                      <span :class="r.urgency_level === 'ฉุกเฉิน' ? 'bg-red-100 text-red-700' : 'bg-blue-100 text-blue-700'"
-                        class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium">
-                        {{ r.urgency_level }}
-                      </span>
+                      <span v-if="r.urgency_level === 'critical'" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-red-200 text-red-800">วิกฤต</span>
+                      <span v-else-if="r.urgency_level === 'high'" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">สูง</span>
+                      <span v-else-if="r.urgency_level === 'medium'" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-amber-100 text-amber-800">ปานกลาง</span>
+                      <span v-else class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">ปกติ</span>
                     </td>
                     <td class="py-3 px-4 text-center">
                       <span :class="referralStatusClass(r.status)" class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium">

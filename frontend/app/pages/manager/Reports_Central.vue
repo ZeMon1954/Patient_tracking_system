@@ -414,7 +414,9 @@
                     <td class="py-3 px-4 font-semibold text-[#006399]">{{ item.to_unit_name }}</td>
                     <td class="py-3 px-4 max-w-[200px] truncate" :title="item.reason">{{ item.reason }}</td>
                     <td class="py-3 px-4 text-center">
-                      <span v-if="item.urgency_level === 'urgent'" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-700">ฉุกเฉิน</span>
+                      <span v-if="item.urgency_level === 'critical'" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-200 text-red-800">วิกฤต</span>
+                      <span v-else-if="item.urgency_level === 'high'" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">สูง</span>
+                      <span v-else-if="item.urgency_level === 'medium'" class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800">ปานกลาง</span>
                       <span v-else class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-700">ปกติ</span>
                     </td>
                     <td class="py-3 px-4 text-center">

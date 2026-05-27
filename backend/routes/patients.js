@@ -21,6 +21,8 @@ router.put('/:id', authorizeRoles(['admin', 'hospital_staff', 'pcu_staff']), pc.
 router.delete('/:id', authorizeRoles(['admin', 'hospital_staff']), pc.deletePatient);
 
 // Appointment sub-routes
+router.get('/appointments/calendar', authorizeRoles(['admin', 'hospital_staff', 'pcu_staff', 'manager']), pc.getAppointmentsCalendar);
+
 router.get('/:id/appointments', authorizeRoles(['admin', 'hospital_staff', 'pcu_staff', 'manager']), pc.getAppointments);
 router.post('/:id/appointments', authorizeRoles(['admin', 'hospital_staff', 'pcu_staff']), pc.createAppointment);
 router.put('/:id/appointments/:apptId', authorizeRoles(['admin', 'hospital_staff', 'pcu_staff']), pc.updateAppointment);

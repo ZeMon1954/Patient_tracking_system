@@ -11,7 +11,7 @@ const upload = multer({ storage: storage });
 
 router.use(authenticateToken);
 
-router.post('/', authorizeRoles(['admin', 'pcu_staff']), upload.array('images', 5), tc.createTracking);
+router.post('/', authorizeRoles(['admin', 'pcu_staff', 'hospital_staff']), upload.array('images', 5), tc.createTracking);
 router.get('/pcu/:unit_id', authorizeRoles(['admin', 'pcu_staff', 'manager']), tc.getPCUPatients);
 router.get('/pcu/:unit_id/today-appointments', authorizeRoles(['admin', 'pcu_staff', 'manager']), tc.getTodayAppointments);
 router.get('/pcu/:unit_id/missed-appointments', authorizeRoles(['admin', 'pcu_staff', 'manager']), tc.getMissedAppointments);

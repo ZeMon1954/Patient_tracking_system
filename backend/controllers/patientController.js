@@ -563,3 +563,52 @@ exports.createDisease = async (req, res) => {
     res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
   }
 };
+
+// GET /api/patients/appointments/calendar - ดึงข้อมูลนัดหมายของเดือน (กรองตามหน่วยบริการ)
+exports.getAppointmentsCalendar = async (req, res) => {
+  try {
+    const { month } = req.query; // format: 'YYYY-MM'
+    if (!month) {
+      return res.status(400).json({ message: 'กรุณาระบุเดือน (YYYY-MM)' });
+    }
+
+    const { role, service_unit_id } = req.user;
+
+    let userFilter = '';
+    const params = [`${month}-01`, `${month}-31`];
+
+    if (role !== 'admin' && role !== 'manager') {
+      // เฉพาะคนไข้ที่รับมา (คนไข้ในหน่วยตัวเอง หรือคนไข้ที่ถูกส่งต่อมายังหน่วยตัวเองแล้วรับงาน)
+      userFilter = `
+        AND (
+          p.service_unit_id = ? 
+          OR p.id IN (SELECT patient_id FROM referral WHERE to_service_unit_id = ? AND status IN ('accepted', 'completed'))
+        )
+      `;
+      params.push(service_unit_id, service_unit_id);
+    }
+
+    const [rows] = await db.query(`
+      SELECT 
+        a.id,
+        a.patient_id,
+        DATE(a.appointment_date) AS appointment_date,
+        TIME(a.appointment_date) AS appointment_time,
+        a.reason,
+        a.status,
+        CONCAT(p.first_name, ' ', p.last_name) AS patient_name,
+        p.hn_number
+      FROM appointments a
+      JOIN patient p ON a.patient_id = p.id
+      WHERE DATE(a.appointment_date) >= ? 
+        AND DATE(a.appointment_date) <= ?
+        ${userFilter}
+      ORDER BY a.appointment_date ASC
+    `, params);
+
+    res.json(rows);
+  } catch (err) {
+    console.error('getAppointmentsCalendar:', err);
+    res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงข้อมูลปฏิทิน' });
+  }
+};

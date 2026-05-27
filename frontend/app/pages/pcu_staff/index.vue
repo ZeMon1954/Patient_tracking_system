@@ -461,7 +461,7 @@
 
     <!-- Modal สร้างการนัดหมาย -->
     <div v-if="showAppointmentModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col">
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] overflow-hidden flex flex-col">
         
         <div class="flex items-start justify-between px-6 py-5 border-b border-slate-100">
           <div class="flex items-center gap-4">
@@ -492,8 +492,12 @@
             </div>
           </div>
 
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div class="space-y-1.5">
+          <div class="mb-4">
+            <AppointmentCalendar v-model="appointmentForm.date" />
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="space-y-1.5 hidden">
               <label class="text-sm font-medium text-slate-700">วันที่นัด <span class="text-rose-500">*</span></label>
               <input v-model="appointmentForm.date" type="date" class="input-style" />
             </div>

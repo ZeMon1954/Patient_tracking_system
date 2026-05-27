@@ -136,6 +136,9 @@
                       <button @click="openAppointmentModal(p)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-emerald-50 text-slate-400 hover:text-emerald-600 transition-colors" title="สร้างการนัดหมาย">
                         <span class="material-symbols-outlined text-[20px]">calendar_add_on</span>
                       </button>
+                      <button @click="openFollowUpModal(p)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-teal-50 text-slate-400 hover:text-teal-600 transition-colors" title="บันทึกผลการติดตาม/รักษา">
+                        <span class="material-symbols-outlined text-[20px]">assignment_turned_in</span>
+                      </button>
                       <button @click="openHistoryModal(p)" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-purple-50 text-slate-400 hover:text-purple-600 transition-colors" title="ดูประวัติ">
                         <span class="material-symbols-outlined text-[20px]">history</span>
                       </button>
@@ -161,6 +164,10 @@
               <div class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[18px] text-emerald-500">calendar_add_on</span>
                 <span class="text-[11px] text-slate-600">นัดหมาย</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px] text-teal-500">assignment_turned_in</span>
+                <span class="text-[11px] text-slate-600">บันทึกผล</span>
               </div>
               <div class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[18px] text-purple-500">history</span>
@@ -520,7 +527,7 @@
 
     <!-- ===================== Modal สร้างการนัดหมาย ===================== -->
     <div v-if="showAppointmentModal" class="fixed inset-0 z-[100] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-4">
-      <div class="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-hidden flex flex-col">
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-5xl max-h-[95vh] overflow-hidden flex flex-col">
         <div class="flex items-start justify-between px-6 py-5 border-b border-slate-100">
           <div class="flex items-center gap-4">
             <div class="w-10 h-10 bg-[#00685f]/10 rounded-lg flex items-center justify-center text-[#00685f] shrink-0">
@@ -537,8 +544,14 @@
         </div>
 
         <div class="p-6 overflow-y-auto space-y-5">
-          <div class="grid grid-cols-3 gap-4">
-            <div class="space-y-1.5">
+          
+          <div class="mb-4">
+            <AppointmentCalendar v-model="apptForm.appointment_date" />
+          </div>
+
+          <div class="grid grid-cols-2 gap-4">
+            <!-- ซ่อน input date เดิมไว้ หรือลบไปเลยเพราะใช้จาก Calendar แล้ว แต่เก็บไว้ให้เผื่อแก้แบบกรอกมือ -->
+            <div class="space-y-1.5 hidden">
               <label class="label-style">วันที่นัด <span class="text-rose-500">*</span></label>
               <input v-model="apptForm.appointment_date" type="date" class="input-style" />
             </div>
@@ -655,6 +668,9 @@
                   </td>
                   <td class="px-4 py-4">
                     <div class="flex items-center justify-center gap-2">
+                      <button v-if="appt.status === 'pending'" @click="openFollowUpModalFromAppointment(appt)" class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-teal-50 text-slate-400 hover:text-teal-600 transition-colors" title="บันทึกผลการรักษา">
+                        <span class="material-symbols-outlined text-[16px]">assignment_turned_in</span>
+                      </button>
                       <button @click="openReferralModal(selectedPatient, appt)" class="w-7 h-7 flex items-center justify-center rounded-full hover:bg-orange-50 text-slate-400 hover:text-orange-600 transition-colors" title="ส่งต่อจากนัดหมายนี้">
                         <span class="material-symbols-outlined text-[16px]">send_time_extension</span>
                       </button>
@@ -674,6 +690,10 @@
           <!-- คำอธิบายปุ่มจัดการใน Modal ประวัติ -->
           <div class="flex items-center gap-x-6 gap-y-2 py-3 px-4 bg-slate-50 rounded-lg border border-slate-200 mt-4">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider border-r border-slate-200 pr-4 mr-2">ปุ่มจัดการ</span>
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-teal-500">assignment_turned_in</span>
+              <span class="text-[10px] text-slate-600">บันทึกผลการรักษา</span>
+            </div>
             <div class="flex items-center gap-1.5">
               <span class="material-symbols-outlined text-[16px] text-orange-500">send_time_extension</span>
               <span class="text-[10px] text-slate-600">ส่งตัวคนไข้</span>
@@ -768,12 +788,226 @@
       </div>
     </div>
 
+    <!-- Modal บันทึกผลการตรวจ/การรักษา -->
+    <div v-if="showFollowUpModal" class="fixed inset-0 z-[110] flex items-center justify-center p-6 bg-[#0b1c30]/40 backdrop-blur-sm">
+      <div class="bg-surface-container-lowest w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-xl shadow-2xl border border-outline-variant flex flex-col">
+        <!-- Modal Header -->
+        <div class="p-6 md:p-8 border-b border-outline-variant flex justify-between items-center sticky top-0 bg-surface-container-lowest z-10">
+          <div class="flex items-center gap-4">
+            <span class="material-symbols-outlined text-primary text-4xl">history_edu</span>
+            <h3 class="font-headline-md text-headline-md text-on-surface">บันทึกผลการตรวจ / ติดตามผลการรักษา</h3>
+          </div>
+          <button @click="showFollowUpModal = false" class="text-on-surface-variant hover:bg-surface-container-high rounded-full p-2 transition-all">
+            <span class="material-symbols-outlined">close</span>
+          </button>
+        </div>
+        <!-- Modal Body Form -->
+        <div class="p-6 md:p-8 space-y-8">
+          <!-- Header Information Section -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="space-y-2">
+              <label class="font-label-md text-on-surface-variant">ผู้ป่วย :</label>
+              <div class="bg-surface-container-low px-4 py-2 rounded-lg font-body-md text-on-surface border border-outline-variant text-slate-800">{{ followUpForm.patientName }}</div>
+            </div>
+            <div class="space-y-2">
+              <label class="font-label-md text-on-surface-variant">วันที่ตรวจ/บันทึก :</label>
+              <input v-model="followUpForm.followUpDate" class="w-full bg-surface-container-lowest border border-outline rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:border-primary focus:outline-none text-slate-800" type="date"/>
+            </div>
+            <div class="space-y-2">
+              <label class="font-label-md text-on-surface-variant">เจ้าหน้าที่ผู้บันทึก :</label>
+              <div class="w-full bg-surface-container-low border border-outline-variant rounded-lg px-4 py-2 font-body-md text-on-surface flex items-center gap-2 text-slate-800">
+                <span class="material-symbols-outlined text-primary text-[20px]">person_check</span>
+                {{ userName }}
+              </div>
+              <p class="text-[10px] text-on-surface-variant italic mt-1">* ระบบบันทึกชื่อคุณเป็นผู้ติดตามให้อัตโนมัติ</p>
+            </div>
+            <div class="space-y-2">
+              <label class="font-label-md text-on-surface-variant">สถานที่บันทึกผล :</label>
+              <div class="flex flex-wrap gap-6 py-2">
+                <label class="flex items-center gap-2 cursor-pointer group">
+                  <input v-model="followUpForm.location" value="โรงพยาบาล" class="text-primary focus:ring-primary w-5 h-5" type="radio"/>
+                  <span class="font-body-md group-hover:text-primary transition-colors text-slate-800">โรงพยาบาล</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer group">
+                  <input v-model="followUpForm.location" value="บ้านผู้ป่วย" class="text-primary focus:ring-primary w-5 h-5" type="radio"/>
+                  <span class="font-body-md group-hover:text-primary transition-colors text-slate-800">บ้านผู้ป่วย</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer group">
+                  <input v-model="followUpForm.location" value="โทรศัพท์" class="text-primary focus:ring-primary w-5 h-5" type="radio"/>
+                  <span class="font-body-md group-hover:text-primary transition-colors text-slate-800">โทรศัพท์</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <!-- Vital Signs Card Section -->
+          <div class="bg-surface-container-low p-6 md:p-8 rounded-xl border border-outline-variant space-y-6">
+            <div class="flex items-center gap-2 border-b border-outline-variant pb-2">
+              <span class="material-symbols-outlined text-primary">vital_signs</span>
+              <h4 class="font-title-lg text-title-lg text-primary">สัญญาณชีพ (Vital Signs)</h4>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <div class="space-y-2">
+                <label class="font-label-md text-on-surface-variant">ความดันโลหิต (BP):</label>
+                <div class="flex items-center gap-2">
+                  <input v-model="followUpForm.bpSys" class="w-20 bg-white border border-outline rounded-lg px-2 py-2 text-center focus:ring-primary focus:outline-none text-slate-800" placeholder="SYS" type="text"/>
+                  <span class="text-outline">/</span>
+                  <input v-model="followUpForm.bpDia" class="w-20 bg-white border border-outline rounded-lg px-2 py-2 text-center focus:ring-primary focus:outline-none text-slate-800" placeholder="DIA" type="text"/>
+                  <span class="text-label-sm text-outline ml-1">mmHg</span>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="font-label-md text-on-surface-variant">ระดับน้ำตาล (DTX):</label>
+                <div class="flex items-center gap-2">
+                  <input v-model="followUpForm.sugar" class="w-full bg-white border border-outline rounded-lg px-4 py-2 focus:ring-primary focus:outline-none text-slate-800" type="text"/>
+                  <span class="text-label-sm text-outline ml-1 shrink-0">mg/dL</span>
+                </div>
+              </div>
+              <div class="space-y-2">
+                <label class="font-label-md text-on-surface-variant">น้ำหนัก:</label>
+                <div class="flex items-center gap-2">
+                  <input v-model="followUpForm.weight" class="w-full bg-white border border-outline rounded-lg px-4 py-2 focus:ring-primary focus:outline-none text-slate-800" type="text"/>
+                  <span class="text-label-sm text-outline ml-1 shrink-0">kg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Clinical Notes -->
+          <div class="space-y-8">
+            <div class="space-y-2">
+              <label class="font-label-md text-on-surface-variant">อาการโดยรวม / ผลการตรวจ:</label>
+              <textarea v-model="followUpForm.symptoms" class="w-full bg-surface-container-lowest border border-outline rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:outline-none resize-none text-slate-800" placeholder="ระบุอาการปัจจุบันหรือผลตรวจทางคลินิก" rows="2"></textarea>
+            </div>
+            <div class="space-y-2">
+              <label class="font-label-md text-on-surface-variant">ปัญหาที่พบ / วินิจฉัยเบื้องต้น:</label>
+              <textarea v-model="followUpForm.problems" class="w-full bg-surface-container-lowest border border-outline rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:outline-none resize-none text-slate-800" placeholder="ระบุอุปสรรค ปัญหา หรือข้อวินิจฉัยเพิ่มเติม" rows="2"></textarea>
+            </div>
+            <div class="space-y-2">
+              <label class="font-label-md text-on-surface-variant">แผนการรักษา / คำแนะนำที่ให้:</label>
+              <textarea v-model="followUpForm.advice" class="w-full bg-surface-container-lowest border border-outline rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:outline-none resize-none text-slate-800" placeholder="ระบุการปรับยา การรักษา และคำแนะนำ" rows="2"></textarea>
+            </div>
+          </div>
+          <!-- Risk Assessment -->
+          <div class="space-y-4 bg-surface-container-low p-6 rounded-xl border border-outline-variant">
+            <div class="flex items-center gap-2 border-b border-outline-variant pb-2">
+              <span class="material-symbols-outlined text-primary">assessment</span>
+              <h4 class="font-title-lg text-title-lg text-primary">การประเมินความเสี่ยง (Risk Assessment)</h4>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <label class="relative flex flex-col p-4 bg-white border rounded-xl cursor-pointer hover:bg-emerald-50 transition-colors group" :class="followUpForm.health_status === 'normal' ? 'border-emerald-500 ring-1 ring-emerald-500' : 'border-outline-variant'">
+                <input type="radio" v-model="followUpForm.health_status" value="normal" class="sr-only" />
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-bold text-emerald-700">ปกติ (Normal)</span>
+                  <span v-if="followUpForm.health_status === 'normal'" class="material-symbols-outlined text-emerald-600 text-sm">check_circle</span>
+                </div>
+                <p class="text-[10px] text-slate-500">อาการคงที่ หรือควบคุมโรคได้ดี</p>
+              </label>
+
+              <label class="relative flex flex-col p-4 bg-white border rounded-xl cursor-pointer hover:bg-amber-50 transition-colors group" :class="followUpForm.health_status === 'warning' ? 'border-amber-500 ring-1 ring-amber-500' : 'border-outline-variant'">
+                <input type="radio" v-model="followUpForm.health_status" value="warning" class="sr-only" />
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-bold text-amber-700">ต้องติดตาม (Warning)</span>
+                  <span v-if="followUpForm.health_status === 'warning'" class="material-symbols-outlined text-amber-600 text-sm">priority_high</span>
+                </div>
+                <p class="text-[10px] text-slate-500">ควรเพิ่มความถี่ในการติดตาม/ปรับการดูแล</p>
+              </label>
+
+              <label class="relative flex flex-col p-4 bg-white border rounded-xl cursor-pointer hover:bg-rose-50 transition-colors group" :class="followUpForm.health_status === 'critical' ? 'border-rose-500 ring-1 ring-rose-500' : 'border-outline-variant'">
+                <input type="radio" v-model="followUpForm.health_status" value="critical" class="sr-only" />
+                <div class="flex items-center justify-between mb-1">
+                  <span class="text-sm font-bold text-rose-700">วิกฤต (Critical)</span>
+                  <span v-if="followUpForm.health_status === 'critical'" class="material-symbols-outlined text-rose-600 text-sm">emergency</span>
+                </div>
+                <p class="text-[10px] text-slate-500 font-medium">มีภาวะแทรกซ้อนรุนแรง หรือจำเป็นต้องดูแลรักษาเร่งด่วน</p>
+              </label>
+            </div>
+            <div v-if="followUpForm.health_status !== suggestHealthStatus" class="flex items-center gap-2 px-3 py-2 bg-blue-50 text-blue-700 rounded-lg text-xs italic">
+              <span class="material-symbols-outlined text-sm">info</span>
+              ค่าสัญญาณชีพบ่งชี้ว่าควรเป็นสถานะ: {{ suggestHealthStatus === 'critical' ? 'วิกฤต' : suggestHealthStatus === 'warning' ? 'ต้องติดตาม' : 'ปกติ' }}
+            </div>
+          </div>
+
+          <!-- Attachments and Scheduling -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+            <div class="space-y-2">
+              <label class="font-label-md text-on-surface-variant flex items-center gap-2">
+                <span class="material-symbols-outlined text-sm">photo_camera</span> แนบผลตรวจ / ผลแล็บ / รูปภาพประกอบ (ถ้ามี) :
+              </label>
+              <!-- Hidden File Input -->
+              <input 
+                type="file" 
+                ref="fileInput" 
+                class="hidden" 
+                @change="handleFileChange" 
+                accept="image/*" 
+                multiple 
+              />
+              <!-- Upload Dropzone Box -->
+              <div 
+                @click="triggerFileInput"
+                @dragover.prevent="dragOver = true"
+                @dragleave="dragOver = false"
+                @drop.prevent="handleFileDrop"
+                class="border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center transition-all cursor-pointer group"
+                :class="dragOver ? 'border-[#00685f] bg-[#00685f]/5' : 'border-outline-variant hover:bg-surface-container hover:border-primary'"
+              >
+                <span class="material-symbols-outlined text-outline group-hover:text-primary mb-2 text-4xl" :class="dragOver ? 'text-[#00685f]' : ''">cloud_upload</span>
+                <p class="text-sm font-semibold text-on-surface-variant group-hover:text-primary" :class="dragOver ? 'text-[#00685f]' : ''">คลิกหรือลากไฟล์รูปภาพมาที่นี่</p>
+                <p class="text-[11px] text-outline mt-1">รองรับไฟล์ .JPG, .PNG ขนาดไม่เกิน 5MB (สูงสุด 5 รูป)</p>
+              </div>
+
+              <!-- File Previews Grid -->
+              <div v-if="filePreviews.length > 0" class="grid grid-cols-3 gap-3 mt-3 animate-fade-in">
+                <div 
+                  v-for="(url, index) in filePreviews" 
+                  :key="index"
+                  class="relative aspect-square rounded-lg border border-slate-200 overflow-hidden group shadow-sm"
+                >
+                  <img :src="url" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-200" />
+                  <button 
+                    type="button" 
+                    @click.stop="removeSelectedFile(index)"
+                    class="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/60 text-white hover:bg-red-500 transition-colors flex items-center justify-center cursor-pointer shadow"
+                  >
+                    <span class="material-symbols-outlined text-[14px]">close</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div class="space-y-6">
+              <div class="space-y-2">
+                <label class="font-label-md text-on-surface-variant">ต้องการนัดหมายติดตามซ้ำหรือไม่:</label>
+                <label class="flex items-center gap-2 cursor-pointer group py-1">
+                  <input v-model="followUpForm.needFollowUp" class="text-primary focus:ring-primary rounded w-6 h-6 border-outline" type="checkbox"/>
+                  <span class="font-body-md font-bold text-on-surface group-hover:text-primary">ต้องการนัดหมายติดตามผลการรักษาซ้ำ</span>
+                </label>
+              </div>
+              <div v-if="followUpForm.needFollowUp" class="space-y-2 animate-fade-in">
+                <label class="font-label-md text-on-surface-variant flex items-center gap-2">
+                  <span class="material-symbols-outlined text-sm">event</span> วันที่นัดครั้งถัดไป :
+                </label>
+                <input v-model="followUpForm.nextAppointment" class="w-full bg-surface-container-lowest border border-outline rounded-lg px-4 py-2 focus:ring-2 focus:ring-primary focus:outline-none text-slate-800" type="date"/>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- Modal Footer Actions -->
+        <div class="p-6 md:p-8 bg-surface-container-low flex justify-end gap-4 border-t border-outline-variant">
+          <button @click="showFollowUpModal = false" class="px-8 py-2 rounded-lg font-label-md font-bold text-on-surface-variant hover:bg-surface-container-high transition-colors border border-outline-variant bg-white">
+            ยกเลิก
+          </button>
+          <button @click="submitFollowUpForm" class="px-8 py-2 rounded-lg font-label-md font-bold bg-primary text-on-primary hover:bg-primary-container shadow-md active:scale-95 transition-all flex items-center gap-2">
+            <span class="material-symbols-outlined">save</span> บันทึกผล
+          </button>
+        </div>
+      </div>
+    </div>
+
         </div>
   </NuxtLayout>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import Swal from 'sweetalert2'
 
 const config = useRuntimeConfig()
@@ -795,6 +1029,33 @@ const showAppointmentModal = ref(false)
 const showHistoryModal = ref(false)
 const showReferralModal = ref(false)
 const loadingHistory = ref(false)
+
+// บันทึกผลการติดตาม / เยี่ยมบ้าน / รักษา
+const showFollowUpModal = ref(false)
+const followUpForm = reactive({
+  patient_id: null,
+  appointment_id: null,
+  patientName: '',
+  followUpDate: '',
+  officerName: '',
+  location: 'โรงพยาบาล',
+  bpSys: '',
+  bpDia: '',
+  sugar: '',
+  weight: '',
+  symptoms: '',
+  problems: '',
+  advice: '',
+  health_status: 'normal',
+  needFollowUp: false,
+  nextAppointment: ''
+})
+
+// อัปโหลดไฟล์รูปภาพแนบ
+const fileInput = ref(null)
+const selectedFiles = ref([])
+const filePreviews = ref([])
+const dragOver = ref(false)
 
 const selectedPatient = ref(null)
 const patientAppointments = ref([])
@@ -1321,6 +1582,249 @@ let searchTimer = null
 const debouncedSearch = () => {
   clearTimeout(searchTimer)
   searchTimer = setTimeout(() => fetchPatients(searchQuery.value), 400)
+}
+
+// ============= Follow Up & File Upload Helpers =============
+const triggerFileInput = () => {
+  if (fileInput.value) {
+    fileInput.value.click()
+  }
+}
+
+const handleFileChange = (e) => {
+  const files = Array.from(e.target.files || [])
+  processFiles(files)
+}
+
+const handleFileDrop = (e) => {
+  dragOver.value = false
+  const files = Array.from(e.dataTransfer.files || [])
+  processFiles(files)
+}
+
+const processFiles = (files) => {
+  if (selectedFiles.value.length + files.length > 5) {
+    Swal.fire({
+      icon: 'warning',
+      title: 'จำนวนรูปภาพเกินกำหนด',
+      text: 'คุณสามารถแนบรูปภาพประกอบได้สูงสุด 5 รูปต่อครั้ง',
+      confirmButtonColor: '#00685f'
+    })
+    return
+  }
+
+  for (const file of files) {
+    if (!file.type.startsWith('image/')) {
+      Swal.fire({
+        icon: 'error',
+        title: 'ไฟล์ไม่ถูกต้อง',
+        text: `ไฟล์ "${file.name}" ไม่ใช่รูปภาพ`,
+        confirmButtonColor: '#00685f'
+      })
+      continue
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      Swal.fire({
+        icon: 'error',
+        title: 'ไฟล์ขนาดใหญ่เกินกำหนด',
+        text: `รูปภาพ "${file.name}" มีขนาดเกิน 5MB`,
+        confirmButtonColor: '#00685f'
+      })
+      continue
+    }
+
+    selectedFiles.value.push(file)
+    const previewUrl = URL.createObjectURL(file)
+    filePreviews.value.push(previewUrl)
+  }
+}
+
+const removeSelectedFile = (index) => {
+  URL.revokeObjectURL(filePreviews.value[index])
+  selectedFiles.value.splice(index, 1)
+  filePreviews.value.splice(index, 1)
+}
+
+const clearSelectedFiles = () => {
+  filePreviews.value.forEach(url => URL.revokeObjectURL(url))
+  selectedFiles.value = []
+  filePreviews.value = []
+}
+
+const suggestHealthStatus = computed(() => {
+  const sys = parseInt(followUpForm.bpSys)
+  const dia = parseInt(followUpForm.bpDia)
+  const sugar = parseInt(followUpForm.sugar)
+  
+  if (sys >= 160 || sys <= 80 || dia >= 100 || (sugar > 0 && (sugar >= 300 || sugar <= 60))) {
+    return 'critical'
+  }
+  if (sys >= 140 || sys <= 90 || dia >= 90 || (sugar > 0 && (sugar >= 180 || sugar <= 70))) {
+    return 'warning'
+  }
+  return 'normal'
+})
+
+watch(() => [followUpForm.bpSys, followUpForm.bpDia, followUpForm.sugar], () => {
+  followUpForm.health_status = suggestHealthStatus.value
+})
+
+const openFollowUpModal = (patient) => {
+  clearSelectedFiles()
+  followUpForm.patient_id = patient.id
+  followUpForm.appointment_id = null
+  followUpForm.patientName = `${patient.first_name} ${patient.last_name}` + (patient.hn_number ? ` (HN: ${patient.hn_number})` : '')
+  followUpForm.followUpDate = new Date().toISOString().split('T')[0]
+  followUpForm.officerName = userName.value
+  followUpForm.location = 'โรงพยาบาล'
+  followUpForm.bpSys = ''
+  followUpForm.bpDia = ''
+  followUpForm.sugar = ''
+  followUpForm.weight = ''
+  followUpForm.symptoms = ''
+  followUpForm.problems = ''
+  followUpForm.advice = ''
+  followUpForm.health_status = 'normal'
+  followUpForm.needFollowUp = false
+  followUpForm.nextAppointment = ''
+  
+  showFollowUpModal.value = true
+}
+
+const openFollowUpModalFromAppointment = (appointment) => {
+  clearSelectedFiles()
+  followUpForm.patient_id = selectedPatient.value.id
+  followUpForm.appointment_id = appointment.id
+  followUpForm.patientName = `${selectedPatient.value.first_name} ${selectedPatient.value.last_name}` + (selectedPatient.value.hn_number ? ` (HN: ${selectedPatient.value.hn_number})` : '')
+  followUpForm.followUpDate = new Date().toISOString().split('T')[0]
+  followUpForm.officerName = userName.value
+  followUpForm.location = 'โรงพยาบาล'
+  followUpForm.bpSys = ''
+  followUpForm.bpDia = ''
+  followUpForm.sugar = ''
+  followUpForm.weight = ''
+  followUpForm.symptoms = appointment.reason || ''
+  followUpForm.problems = ''
+  followUpForm.advice = ''
+  followUpForm.health_status = 'normal'
+  followUpForm.needFollowUp = false
+  followUpForm.nextAppointment = ''
+  
+  showHistoryModal.value = false // Close history modal if open
+  showFollowUpModal.value = true
+}
+
+const createFollowUpAppointment = async (token) => {
+  const reason = ['ประเภท: followup', followUpForm.advice || followUpForm.symptoms || 'นัดติดตามจากการบันทึกผลการติดตาม']
+    .filter(Boolean)
+    .join(' | ')
+
+  const res = await fetch(`${API_BASE}/patients/${followUpForm.patient_id}/appointments`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${token}`
+    },
+    body: JSON.stringify({
+      appointment_date: followUpForm.nextAppointment,
+      appointment_time: '08:00',
+      reason,
+      doctor_id: currentUserId.value
+    })
+  })
+
+  const data = await res.json()
+  if (!res.ok) throw new Error(data.message || 'ไม่สามารถสร้างนัดหมายติดตามซ้ำได้')
+}
+
+const submitFollowUpForm = async () => {
+  if (followUpForm.needFollowUp && !followUpForm.nextAppointment) {
+    return Swal.fire({
+      title: 'ข้อมูลไม่ครบ',
+      text: 'กรุณาระบุวันที่นัดหมายครั้งถัดไป',
+      icon: 'warning',
+      confirmButtonText: 'ตกลง'
+    })
+  }
+  if (!followUpForm.patient_id) {
+    return Swal.fire({
+      title: 'ผิดพลาด',
+      text: 'ไม่พบข้อมูลผู้ป่วย',
+      icon: 'error',
+      confirmButtonText: 'ตกลง'
+    })
+  }
+  isSubmitting.value = true
+  try {
+    const formData = new FormData()
+    formData.append('patient_id', followUpForm.patient_id)
+    if (followUpForm.appointment_id) {
+      formData.append('appointment_id', followUpForm.appointment_id)
+    }
+    formData.append('tracked_by_user_id', currentUserId.value)
+    formData.append('tracking_date', followUpForm.followUpDate)
+    formData.append('bp_sys', followUpForm.bpSys || '')
+    formData.append('bp_dia', followUpForm.bpDia || '')
+    formData.append('sugar', followUpForm.sugar || '')
+    formData.append('weight', followUpForm.weight || '')
+    formData.append('symptoms_detail', followUpForm.symptoms || '')
+    formData.append('problems', followUpForm.problems || '')
+    formData.append('advice', followUpForm.advice || '')
+    formData.append('location', followUpForm.location)
+    formData.append('health_status', followUpForm.health_status)
+    
+    if (followUpForm.needFollowUp && followUpForm.nextAppointment) {
+      formData.append('next_appointment_date', followUpForm.nextAppointment)
+    }
+
+    // Attach all selected image files
+    for (const file of selectedFiles.value) {
+      formData.append('images', file)
+    }
+
+    const token = localStorage.getItem('token')
+    const res = await fetch(`${API_BASE}/tracking`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    })
+
+    if (res.ok) {
+      if (followUpForm.needFollowUp) {
+        await createFollowUpAppointment(token)
+      }
+      Swal.fire({
+        title: 'สำเร็จ!',
+        text: 'บันทึกผลการรักษาและติดตามเรียบร้อยแล้ว!',
+        icon: 'success',
+        timer: 1500,
+        showConfirmButton: false
+      })
+      showFollowUpModal.value = false
+      await fetchPatients()
+    } else {
+      const data = await res.json()
+      Swal.fire({
+        title: 'เกิดข้อผิดพลาด',
+        text: data.message,
+        icon: 'error',
+        confirmButtonText: 'ตกลง'
+      })
+    }
+  } catch (err) {
+    console.error(err)
+    Swal.fire({
+      title: 'เกิดข้อผิดพลาด',
+      text: 'ไม่สามารถบันทึกข้อมูลได้',
+      icon: 'error',
+      confirmButtonText: 'ตกลง'
+    })
+  } finally {
+    isSubmitting.value = false
+  }
 }
 
 // ============= Logout =============

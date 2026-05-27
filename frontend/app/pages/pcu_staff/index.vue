@@ -229,7 +229,11 @@
                   </td>
                   <td class="py-4 px-4 text-center">
                     <div class="flex items-center justify-center gap-2 text-sm font-medium">
-                      <button @click="openFollowUpModal(patient)" class="text-[#00685f] hover:text-[#005049] transition-colors" title="บันทึกผล">
+                      <button 
+                        @click="openFollowUpModal(patient)" 
+                        :class="isFutureDate(patient.nextVisitDate) ? 'text-slate-300 cursor-not-allowed' : 'text-[#00685f] hover:text-[#005049] transition-colors'" 
+                        :title="isFutureDate(patient.nextVisitDate) ? 'ยังไม่ถึงกำหนดวันนัด' : 'บันทึกผล'"
+                      >
                         บันทึกผล
                       </button>
                       <span class="text-slate-300">|</span>
@@ -1482,6 +1486,15 @@ watch(() => [followUpForm.bpSys, followUpForm.bpDia, followUpForm.sugar], () => 
 })
 
 const openFollowUpModal = (patient) => {
+  if (isFutureDate(patient.nextVisitDate)) {
+    return Swal.fire({
+      title: 'ยังไม่ถึงกำหนดวันนัด',
+      text: `ผู้ป่วยรายนี้มีกำหนดเยี่ยมนัดหมายในอนาคต (${formatDate(patient.nextVisitDate)}) ไม่สามารถบันทึกผลการติดตามล่วงหน้าได้`,
+      icon: 'warning',
+      confirmButtonText: 'ตกลง',
+      confirmButtonColor: '#00685f'
+    })
+  }
   clearSelectedFiles()
   followUpForm.patient_id = patient.id
   followUpForm.appointment_id = null
@@ -1709,6 +1722,15 @@ const formatTimeOnly = (value) => {
 const formatDate = (dateStr) => {
   if (!dateStr) return '-'
   return new Date(dateStr).toLocaleDateString('th-TH')
+}
+
+const isFutureDate = (dateStr) => {
+  if (!dateStr) return false
+  const scheduledDate = new Date(dateStr)
+  scheduledDate.setHours(0, 0, 0, 0)
+  const today = new Date()
+  today.setHours(0, 0, 0, 0)
+  return scheduledDate.getTime() > today.getTime()
 }
 
 // Edit Patient Modal

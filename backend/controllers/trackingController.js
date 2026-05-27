@@ -155,7 +155,7 @@ exports.createTracking = async (req, res) => {
         const [refResult] = await connection.query(
           `INSERT INTO referral 
             (patient_id, appointment_id, from_service_unit_id, to_service_unit_id, referred_by_user_id, referral_date, reason, urgency_level, status) 
-           VALUES (?, ?, ?, ?, ?, NOW(), ?, 'urgent', 'pending')`,
+           VALUES (?, ?, ?, ?, ?, NOW(), ?, 'critical', 'pending')`,
           [
             patient_id,
             appointment_id || null,

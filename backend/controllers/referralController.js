@@ -186,7 +186,8 @@ exports.createReferral = async (req, res) => {
       ? `${referral_date} ${referral_time}:00`
       : `${referral_date} 08:00:00`;
 
-    const level = urgency_level === 'urgent' ? 'urgent' : 'normal';
+    const validLevels = ['low', 'medium', 'high', 'critical'];
+    const level = validLevels.includes(urgency_level) ? urgency_level : 'low';
     const [result] = await db.query(
       'INSERT INTO referral (patient_id, appointment_id, from_service_unit_id, to_service_unit_id, referred_by_user_id, referral_date, reason, urgency_level, status) VALUES (?,?,?,?,?,?,?,?,?)',
       [patient_id, appointment_id || null, userUnitId, to_service_unit_id, userId, datetime, reason || null, level, 'pending']

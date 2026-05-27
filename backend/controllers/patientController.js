@@ -409,6 +409,11 @@ exports.createAppointment = async (req, res) => {
       ? `${appointment_date} ${appointment_time}:00`
       : `${appointment_date} 08:00:00`;
 
+    // ตรวจสอบวันนัดหมายย้อนหลัง (UC-02 Alternative Flow)
+    if (new Date(datetime) < new Date()) {
+      return res.status(400).json({ message: 'ไม่สามารถนัดหมายย้อนหลังได้ กรุณาเลือกวันและเวลาในอนาคต' });
+    }
+
     const [result] = await db.query(
       'INSERT INTO appointments (patient_id, doctor_id, appointment_date, reason, status) VALUES (?,?,?,?,?)',
       [patientId, doctor_id || null, datetime, reason || null, 'pending']

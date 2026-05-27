@@ -402,7 +402,7 @@ sequenceDiagram
     BE->>DB: รัน Database Transaction เพื่อความถูกต้องของข้อมูลทั้งหมด
     activate DB
     DB->>DB: INSERT INTO tracking (บันทึกข้อมูลสัญญาณชีพและระดับความเสี่ยง)
-    DB->>DB: INSERT INTO image (เก็บประวัติไฟล์รูปภาพแนบและโฟลเดอร์จัดเก็บ)
+    DB->>DB: INSERT INTO image (เก็บ Public URL จาก Supabase Storage และเมทาดาต้ารูปภาพแนบ)
     DB->>DB: UPDATE appointments SET status = 'completed' (สิ้นสุดสถานะนัดหมายเยี่ยมนี้)
     DB->>DB: UPDATE referral SET status = 'completed' (หากเป็นนัดเชื่อมเคสส่งต่อ ให้สิ้นสุดการส่งตัวสมบูรณ์)
     DB-->>BE: ส่งผลลัพธ์ยืนยันการบันทึกสำเร็จ
@@ -686,15 +686,15 @@ erDiagram
 ---
 
 ### ตารางที่ 10: `image` (ข้อมูลการแนบรูปภาพรายงานเยี่ยมบ้าน)
-จัดเก็บพิกัดเส้นทางไฟล์และเมทาดาต้าของรูปภาพที่แนบประกอบการบันทึกติดตามเยี่ยมบ้าน
+จัดเก็บลิงก์ URL สาธารณะ (Public URL) และเมทาดาต้าของรูปภาพที่แนบประกอบการบันทึกติดตามเยี่ยมบ้าน โดยไฟล์รูปภาพจริงจัดเก็บบน Supabase Storage (Cloud Object Storage)
 
 | No. | Field Name | Type | Length | Format | Description | Constraint |
 | :---: | :--- | :--- | :---: | :--- | :--- | :--- |
 | 1 | id | int | 11 | ตัวเลข | ไอดีลำดับไฟล์รูปภาพแนบ | Primary key |
 | 2 | reference_type | varchar | 50 | ตัวอักษร | ชนิดเอกสารอ้างอิง (เช่น 'tracking', 'referral') | Not Null |
 | 3 | reference_id | int | 11 | ตัวเลข | ไอดีระเบียนข้อมูลของตารางอ้างอิง | Not Null |
-| 4 | file_name | varchar | 255 | ตัวอักษร | ชื่อไฟล์ดั้งเดิมของรูปภาพ | Not Null |
-| 5 | file_path | varchar | 255 | ตัวอักษร | เส้นทางที่จัดเก็บบนเซิร์ฟเวอร์ (Physical Path) | Not Null |
+| 4 | file_name | varchar | 255 | ตัวอักษร | ชื่อไฟล์ที่สร้างขึ้นใหม่แบบไม่ซ้ำ (Unique File Name) | Not Null |
+| 5 | file_path | varchar | 255 | ตัวอักษร | ลิงก์ URL สาธารณะของรูปภาพบน Supabase Storage (Public URL) | Not Null |
 | 6 | file_type | varchar | 100 | ตัวอักษร | ชนิดข้อมูลและฟอร์แมต (Mime Type เช่น image/jpeg) | Not Null |
 | 7 | uploaded_by | int | 11 | ตัวเลข | รหัสเจ้าหน้าที่ผู้ถ่ายและอัปโหลด | Foreign key |
 | 8 | uploaded_at | datetime | 0 | วันที่ | วันและเวลาที่บันทึกอัปโหลดรูปภาพ | Not Null |

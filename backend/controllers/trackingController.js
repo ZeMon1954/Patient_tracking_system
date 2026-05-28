@@ -578,5 +578,7 @@ exports.getTrackingAttachments = async (req, res) => {
   } catch (err) {
     console.error('getTrackingAttachments error:', err);
     res.status(500).json({ message: 'เกิดข้อผิดพลาดในการดึงรูปภาพแนบ' });
+
+    
   }
 };

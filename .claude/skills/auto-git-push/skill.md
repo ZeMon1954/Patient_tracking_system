@@ -3,7 +3,7 @@
 ## Trigger
 เรียกใช้ Skill นี้ทุกครั้งที่:
 - แก้ไข code เสร็จสมบูรณ์และทดสอบแล้ว
-- ผู้ใช้พูดว่า "เสร็จแล้ว ดันขึ้น git", "push ขึ้น git", "commit เลย", "ดัน git"
+- ผู้ใช้พูดว่า "เสร็จแล้ว ดันขึ้น git", "push ขึ้น git", "commit เลย", "ดัน git","git"
 - หลังจาก implement feature ใหม่ หรือ fix bug สำเร็จ
 
 ## Instructions

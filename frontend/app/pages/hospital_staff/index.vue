@@ -152,11 +152,74 @@
             </table>
           </div>
 
-          <div class="px-6 py-4 border-t border-slate-200 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-            <div class="text-sm text-slate-500 font-medium italic">พบ <span class="font-bold text-[#00685f]">{{ sortedFilteredPatients.length }}</span> รายการ</div>
-            
-            <!-- คำอธิบายปุ่มจัดการ -->
-            <div class="flex flex-wrap items-center gap-x-6 gap-y-2 py-1 px-4 bg-white rounded-lg border border-slate-200 shadow-sm">
+          <!-- Footer: สรุป + Pagination + Legend -->
+          <div class="px-6 py-4 border-t border-slate-200 bg-slate-50/50 flex flex-col gap-4">
+
+            <!-- Row 1: สรุปจำนวน + ตัวเลือก limit -->
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div class="text-sm text-slate-500 font-medium">
+                แสดง
+                <span class="font-bold text-[#00685f]">{{ paginationInfo.from }}–{{ paginationInfo.to }}</span>
+                จากทั้งหมด
+                <span class="font-bold text-[#00685f]">{{ pagination.total }}</span>
+                รายการ
+              </div>
+              <div class="flex items-center gap-2 text-sm">
+                <span class="text-slate-500">แสดงหน้าละ</span>
+                <select
+                  v-model="pagination.limit"
+                  @change="onLimitChange"
+                  class="px-2 py-1 border border-slate-300 rounded-md text-slate-700 text-sm bg-white focus:outline-none focus:ring-1 focus:ring-[#00685f]"
+                >
+                  <option :value="10">10</option>
+                  <option :value="20">20</option>
+                  <option :value="50">50</option>
+                  <option :value="100">100</option>
+                </select>
+                <span class="text-slate-500">รายการ</span>
+              </div>
+            </div>
+
+            <!-- Row 2: Pagination Buttons -->
+            <div v-if="pagination.totalPages > 1" class="flex items-center justify-center gap-1">
+              <!-- Prev -->
+              <button
+                @click="goToPage(pagination.page - 1)"
+                :disabled="pagination.page <= 1"
+                class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                title="หน้าก่อน"
+              >
+                <span class="material-symbols-outlined text-[18px]">chevron_left</span>
+              </button>
+
+              <!-- Page numbers -->
+              <template v-for="p in visiblePages" :key="p">
+                <span v-if="p === '...'" class="w-9 h-9 flex items-center justify-center text-slate-400 text-sm">…</span>
+                <button
+                  v-else
+                  @click="goToPage(p)"
+                  :class="p === pagination.page
+                    ? 'bg-[#00685f] text-white border-[#00685f] shadow-sm'
+                    : 'border-slate-200 text-slate-600 hover:bg-slate-100'"
+                  class="w-9 h-9 flex items-center justify-center rounded-lg border text-sm font-medium transition-colors"
+                >
+                  {{ p }}
+                </button>
+              </template>
+
+              <!-- Next -->
+              <button
+                @click="goToPage(pagination.page + 1)"
+                :disabled="pagination.page >= pagination.totalPages"
+                class="w-9 h-9 flex items-center justify-center rounded-lg border border-slate-200 text-slate-500 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                title="หน้าถัดไป"
+              >
+                <span class="material-symbols-outlined text-[18px]">chevron_right</span>
+              </button>
+            </div>
+
+            <!-- Row 3: Legend -->
+            <div class="flex flex-wrap items-center gap-x-6 gap-y-2 py-1 px-4 bg-white rounded-lg border border-slate-200 shadow-sm self-start">
               <span class="text-[11px] font-bold text-slate-400 uppercase tracking-wider border-r border-slate-200 pr-4 mr-2">คำอธิบายปุ่ม</span>
               <div class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[18px] text-emerald-500">calendar_add_on</span>
@@ -798,6 +861,52 @@ const diseases = ref([])
 const isLoading = ref(false)
 const isSubmitting = ref(false)
 const searchQuery = ref('')
+
+// ============= Pagination State =============
+const pagination = reactive({
+  page: 1,
+  limit: 20,
+  total: 0,
+  totalPages: 1,
+})
+
+const paginationInfo = computed(() => ({
+  from: pagination.total === 0 ? 0 : (pagination.page - 1) * pagination.limit + 1,
+  to: Math.min(pagination.page * pagination.limit, pagination.total),
+}))
+
+// สร้าง array ของเลขหน้าที่จะแสดง (มี ... ถ้าหน้าเยอะ)
+const visiblePages = computed(() => {
+  const total = pagination.totalPages
+  const current = pagination.page
+  const delta = 2
+  const pages = []
+  const range = []
+  for (let i = Math.max(1, current - delta); i <= Math.min(total, current + delta); i++) {
+    range.push(i)
+  }
+  if (range[0] > 1) {
+    pages.push(1)
+    if (range[0] > 2) pages.push('...')
+  }
+  pages.push(...range)
+  if (range[range.length - 1] < total) {
+    if (range[range.length - 1] < total - 1) pages.push('...')
+    pages.push(total)
+  }
+  return pages
+})
+
+const goToPage = (p) => {
+  if (p < 1 || p > pagination.totalPages || p === pagination.page) return
+  pagination.page = p
+  fetchPatients(searchQuery.value)
+}
+
+const onLimitChange = () => {
+  pagination.page = 1
+  fetchPatients(searchQuery.value)
+}
 const filterCareStatus = ref('all') // 'all', 'in_unit', 'referred_out'
 
 const showAddModal = ref(false)
@@ -820,6 +929,7 @@ const userUnitName = computed(() => {
 })
 
 const sortedFilteredPatients = computed(() => {
+  // การกรอง filterCareStatus ทำฝั่ง client เพราะข้อมูลใน page นั้นอาจมีทั้งสองประเภท
   let list = [...patients.value]
 
   if (filterCareStatus.value === 'in_unit') {
@@ -830,19 +940,21 @@ const sortedFilteredPatients = computed(() => {
     list = list.filter(p => p.is_refer_back)
   }
 
-  // 2. เรียงลำดับ: ในหน่วยงานตนเองขึ้นก่อนเสมอ
+  // เรียงลำดับ: ในหน่วยงานตนเองขึ้นก่อนเสมอ
   list.sort((a, b) => {
     const aInUnit = a.service_unit_id === currentUserUnitId.value ? 1 : 0
     const bInUnit = b.service_unit_id === currentUserUnitId.value ? 1 : 0
-    
-    if (aInUnit !== bInUnit) {
-      return bInUnit - aInUnit // 1 (in unit) มาก่อน 0 (not in unit)
-    }
-    // ถ้ากลุ่มเดียวกัน ให้เรียงตาม ID ใหม่ล่าสุดขึ้นก่อน
+    if (aInUnit !== bInUnit) return bInUnit - aInUnit
     return b.id - a.id
   })
 
   return list
+})
+
+// เมื่อเปลี่ยน filter ให้กลับหน้า 1 เสมอ
+watch(filterCareStatus, () => {
+  pagination.page = 1
+  fetchPatients(searchQuery.value)
 })
 
 const currentDate = ref(new Intl.DateTimeFormat('th-TH', { dateStyle: 'medium', timeStyle: 'short' }).format(new Date()))
@@ -915,13 +1027,26 @@ const fetchPatients = async (q = '') => {
   isLoading.value = true
   try {
     const token = localStorage.getItem('token')
-    const params = q ? `?search=${encodeURIComponent(q)}` : ''
-    const res = await fetch(`${API_BASE}/patients${params}`, {
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
+    const qs = new URLSearchParams({
+      page: pagination.page,
+      limit: pagination.limit,
+      ...(q ? { search: q } : {}),
     })
-    patients.value = await res.json()
+    const res = await fetch(`${API_BASE}/patients?${qs}`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    })
+    const json = await res.json()
+    // รองรับทั้ง response แบบ { data, total, page, limit, totalPages } และ array เดิม
+    if (Array.isArray(json)) {
+      patients.value = json
+      pagination.total = json.length
+      pagination.totalPages = 1
+    } else {
+      patients.value = json.data ?? []
+      pagination.total = json.total ?? 0
+      pagination.totalPages = json.totalPages ?? 1
+      pagination.page = json.page ?? 1
+    }
   } catch (e) { Swal.fire('เกิดข้อผิดพลาด', 'โหลดข้อมูลผู้ป่วยไม่สำเร็จ', 'error') }
   finally { isLoading.value = false }
 }
@@ -1332,7 +1457,10 @@ const handleCreateDisease = async () => {
 let searchTimer = null
 const debouncedSearch = () => {
   clearTimeout(searchTimer)
-  searchTimer = setTimeout(() => fetchPatients(searchQuery.value), 400)
+  searchTimer = setTimeout(() => {
+    pagination.page = 1   // reset กลับหน้า 1 ทุกครั้งที่ search ใหม่
+    fetchPatients(searchQuery.value)
+  }, 400)
 }
 
 

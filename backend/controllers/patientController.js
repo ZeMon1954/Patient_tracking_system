@@ -49,6 +49,23 @@ exports.getPatients = async (req, res) => {
 
     const whereClause = where.length ? 'WHERE ' + where.join(' AND ') : '';
 
+    // 3. Pagination — รับ ?page=1&limit=20 (default: 20 รายการต่อหน้า, สูงสุด 100)
+    const page = Math.max(1, parseInt(req.query.page) || 1);
+    const limit = Math.min(100, Math.max(1, parseInt(req.query.limit) || 20));
+    const offset = (page - 1) * limit;
+
+    // 3a. COUNT รวมทั้งหมด (ใช้ params ชุดเดิมก่อน LIMIT/OFFSET)
+    const [countRows] = await db.query(`
+      SELECT COUNT(DISTINCT p.id) AS total
+      FROM patient p
+      LEFT JOIN service_unit su ON p.service_unit_id = su.id
+      LEFT JOIN patient_disease_groups pdg ON p.id = pdg.patient_id
+      LEFT JOIN underlying_disease ud ON pdg.disease_id = ud.id
+      ${whereClause}
+    `, params);
+    const total = countRows[0].total;
+
+    // 3b. ดึงข้อมูล พร้อม LIMIT / OFFSET
     const [rows] = await db.query(`
       SELECT
         p.id,
@@ -77,16 +94,21 @@ exports.getPatients = async (req, res) => {
       ${whereClause}
       GROUP BY p.id
       ORDER BY p.id DESC
-    `, params);
+      LIMIT ? OFFSET ?
+    `, [...params, limit, offset]);
 
-    res.json(rows);
+    res.json({
+      data: rows,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+    });
   } catch (err) {
     console.error('getPatients:', err);
     res.status(500).json({ message: 'เกิดข้อผิดพลาด' });
   }
 };
-
-// GET /api/patients/:id - ผู้ป่วยรายเดียว
 exports.getPatientById = async (req, res) => {
   try {
     const { role, service_unit_id } = req.user;

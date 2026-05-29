@@ -1,0 +1,11 @@
+Slide_Number,Title,Content,Visual_Idea
+1,Patient Tracking System,นวัตกรรมการติดตามและส่งต่อคนไข้ เพื่อการดูแลอย่างไร้รอยต่อ,Modern Medical Icon
+2,Pain Points,1. ขาดการติดตามต่อเนื่อง 2. ข้อมูลส่งต่อล่าช้า 3. คนไข้ไม่ทราบนัดหมาย,Broken Link Icon
+3,The Solution,ระบบ Web Application เชื่อมโยง Hospital - PCU - Patient,Circular Connection Diagram
+4,Referral System,ส่งเคสจาก รพ. ไปยัง รพ.สต. ปลายทาง พร้อมประวัติการรักษาทันที,Transfer Icon
+5,Vital Signs Tracking,บันทึกความดัน ค่าน้ำตาล และอาการสำคัญผ่านระบบ Mobile-friendly,Heartbeat Icon
+6,Home Visit Evidence,อัปโหลดรูปถ่ายสภาพบ้านและการจัดยา เพื่อวิเคราะห์ความเสี่ยงเชิงรุก,House Camera Icon
+7,Smart Notifications,ระบบแจ้งเตือนผ่าน Email อัตโนมัติถึงคนไข้และเจ้าหน้าที่,Email Notification Icon
+8,Data Dashboard,วิเคราะห์สถิติการส่งตัวและสุขภาพคนไข้ในภาพรวม,Analytics Chart
+9,Stakeholder Benefits,รพ.: ลด Readmission | รพ.สต.: ลดงานเอกสาร | คนไข้: ปลอดภัยขึ้น,Shield Health Icon
+10,Conclusion,เปลี่ยนการติดตามผลแบบเดิม สู่การดูแลยุคดิจิทัล,Digital Transformation
